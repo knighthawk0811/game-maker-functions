@@ -1,0 +1,12 @@
+/// @function				 array_has(_my_array, _my_value);
+/// @param {array}	 _my_array		The Object you want to move away from
+/// @param {any}	   _my_value		The distance you want to move
+/// @description					certain verison of GM are missing array_contains, use this as a replacement
+function array_has(_my_array, _my_value){
+	for(i=0;i < array_length(_my_array); i++){
+		if array_get(_my_array, i) == _my_value{
+			return true
+		}
+	}
+	return false
+}
