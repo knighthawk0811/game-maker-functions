@@ -1,0 +1,6 @@
+/// @function		direction_8()
+/// @description	will return one of the following directions at random (0,45,90,135,180,215,270,315)
+function direction_8()
+{
+	return choose(0,45,90,135,180,215,270,315);
+}
