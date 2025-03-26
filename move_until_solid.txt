@@ -1,0 +1,30 @@
+
+/// @function						move_until_solid(_direction, _max_distance);
+/// @param {real}	 _direction		The direction you wan to move
+/// @param {real}	 _max_distance	The distance you want to move
+/// @description					replaces move_contact_solid by allowing 0 and negative numbers
+function move_until_solid(_direction, _max_distance){
+	
+	//movement	
+	//we'll add a fractional amount to handle 0 movements
+	//move_contact_solid with 0 movement in GM will actually move up to 1000px
+	//we'll also add a random extra 1px to handle fractional remainders
+	//if fractional amount is .2 then there's a 20% chance we move 1 extra pixel
+	
+	//do movement
+	if(_max_distance > 0){
+		//normal		
+		move_contact_solid(_direction, floor(_max_distance) + 0.000001)		
+		if(random(1) < frac(_max_distance)){
+			move_contact_solid(_direction,1)	
+		}		
+	} else if(_max_distance < 0){
+		//reverse
+		move_contact_solid(_direction + 180, floor(-_max_distance) + 0.000001)		
+		if(random(1) < frac(-_max_distance)){
+			move_contact_solid(_direction + 180,1)	
+		}		
+	} else { 
+		//no movement 
+	}	
+}
