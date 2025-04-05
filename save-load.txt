@@ -1,0 +1,78 @@
+/// SAVE / LOAD
+//we're just going to save/load the player object and nothing else
+//if you want to save more, just use this and add whatever you want to save/load
+//if you're getting an error that XYZ variables doesn't exist, it's probably because you failed to add it to the ALL other variables you NEED sections
+
+/// @function						save_game_data(_save_data = []);
+/// @param {array}	 _save_data		what you want to save
+/// @description					save the game
+function save_game_data(_save_data = []){
+	if(array_length(_save_data) == 0)
+	{
+		//for every instance, create a struct and add it to the array 
+		with (obj_player_base_class)
+		{
+			var _saveEntity =
+			{
+				obj : object_get_name(object_index),
+				y: y,
+				x: x,
+				//ALL other variables you NEED
+			}
+			array_push(_save_data, _saveEntity);
+		}	
+	}	
+	return _save_data;
+}
+
+
+/// @function						save_game();
+/// @param {array}	 _save_data			what you want to save
+/// @description					save the game
+function save_game(_save_data = []){
+
+	if(array_length(_save_data) == 0)
+	{
+		_save_data = save_game_data(_save_data);
+	}	
+	
+	//turn all this data into a JSON string and save it via a buffer
+	var _string = json_stringify(_save_data);
+	var _buffer = buffer_create(string_byte_length(_string) +1, buffer_fixed, 1); buffer_write(_buffer, buffer_string, _string);
+
+	buffer_save(_buffer, "savedgame.save");
+	buffer_delete(_buffer);
+	
+	show_debug_message("Game saved! " + _string);
+}
+
+
+/// @function						load_game();
+/// @description					load the player object
+function load_game(){
+	
+	
+	if (file_exists("savedgame.save"))
+	{
+		//remove existing player
+		with (obj_player_base_class) instance_destroy();
+	
+		var _buffer = buffer_load( "savedgame.save");
+		var _string = buffer_read(_buffer, buffer_string); 
+		buffer_delete(_buffer);
+		
+		var _loadData = json_parse( _string);
+		
+		while (array_length(_loadData) > 0)
+		{
+			var _loadEntity = array_pop(_loadData);
+			with (instance_create_layer(0,0, layer, asset_get_index(_loadEntity.obj)))
+			{
+				x = _loadEntity.x;
+				y = _loadEntity.y 
+				//ALL other variables you NEED
+			}
+		}
+		show_debug_message("game loaded! " + _string);
+	}
+}
