@@ -1,0 +1,10 @@
+/// @function										        move_direction(_direction, _distance);
+/// @param {Real}					_direction		The direction you want to move in
+/// @param {Real}					_distance		  The distance you want to move
+/// @description									      just move, but keep speed proper with regard to x,y
+function move_direction(_direction, _distance) 
+{	
+	//get x,y, components
+	x += lengthdir_x(_distance, _direction)
+	y += lengthdir_y(_distance, _direction)
+}
