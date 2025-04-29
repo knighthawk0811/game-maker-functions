@@ -1,0 +1,140 @@
+
+/// @function							move_contact_object(_direction, _max_distance, _object);
+/// @param {Real}			_direction		The direction you want to move in
+/// @param {Real}			_max_distance		The distance you want to move
+/// @param {Asset.GMObject, Array}	_object			The Object you want to not collide with
+/// @param {Real}			_step			How many internal steps do you want to try if there's a collision? [10]
+/// @description						ike move_contact_solid, but with any object or object type
+function move_contact_object(_direction, _max_distance, _object, _step = 10) 
+{
+	_step = 1 / _step;
+	if(_step <= 0)
+	{
+		_step = 0.1;
+	}
+	
+	//get x,y, components
+	var _movex = lengthdir_x(_max_distance, _direction)
+	var _movey = lengthdir_y(_max_distance, _direction)
+	
+	var _moved = false;
+		
+	//try to move all the way
+	//if collision then 
+	//try to move as far in x and y before hitting the object
+	//use a percentage of the movement values and decrement by 5%
+	for(var i = 1; i > 0; i -= _step)
+	{
+		//get a precentage of the movement
+		var _dx = floor(i * _movex);
+		var _dy = floor(i * _movey);
+		
+		if( !place_meeting(x + _dx, y + _dy, _object) )
+		{
+			x += _dx;
+			y += _dy;
+			_moved = true;
+			break;
+		}
+	}	
+	return _moved;
+}
+
+
+/// @function						move_slide_object(_direction, _max_distance, _object);
+/// @param {Real}			_direction	The Object you want to move away from
+/// @param {Real}			_max_distance	The distance you want to move
+/// @param {Asset.GMObject} _object			The Object you want to not collide with
+/// @description					like move_contact_solid, but with any object or object type
+function move_slide_object(_direction, _max_distance, _object, _wide = false){
+	//use trig to find the x,y portion of movement
+	//dcos, dsin will convert radians and degrees for us
+	var _dx =  _max_distance * dcos(_direction)
+	var _dy = -_max_distance * dsin(_direction)
+	
+	//will use later to see if we actually moved
+	var _current_x = x
+	var _current_y = y
+
+	//movement	
+	move_contact_object(0, _dx, _object);
+	move_contact_object(270, _dy, _object);
+	
+	//slide?
+	//if we aren't moving then maybe we need to slide on a ramp		
+		
+	//use this to move at about 30/15degrees offest from our main direction
+	//this helps us get around stuff
+	var _side_step = _max_distance / 4;
+	if(_wide)
+	{
+		_side_step = _max_distance / 3;
+	}
+		
+	//do horizontal movement
+	if(_dx != 0)
+	{
+		//try slide up?	
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dx); i > 0; i--) 
+			{
+				if( !place_meeting(x + (i * sign(_dx)), y - _side_step, _object) )
+				{
+					x += i * sign(_dx);
+					y -= _max_distance;
+					break;
+				}
+			}
+		}
+		//try slide down?			
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dx); i > 0; i--) 
+			{
+				if( !place_meeting(x + (i * sign(_dx)), y + _side_step, _object) )
+				{
+					x += i * sign(_dx);
+					y += _max_distance;
+					break;
+				}
+			}
+		}
+	} 
+	else 
+	{ 
+		//0 == no movement 
+	}
+	
+	//do vertical movement
+	if(_dy != 0)
+	{
+		//try slide right?	
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dy); i > 0; i--) 
+			{
+				if( !place_meeting(x + _side_step , y + (i * sign(_dy)), _object) )
+				{
+					x += _max_distance;
+					y += i * sign(_dy);
+					break;
+				}
+			}
+		}
+		//try slide left?
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dy); i > 0; i--) 
+			{
+				if( !place_meeting(x - _side_step , y + (i * sign(_dy)), _object) )
+				{
+					x -= _max_distance;
+					y += i * sign(_dy);
+					break;
+				}
+			}
+		}
+	} 
+	else 
+	{ 
+		//0 == no movement 
+	}
+	
+}
