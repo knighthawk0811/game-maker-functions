@@ -1,0 +1,226 @@
+
+/// @function										list_has_solid(_ds_list);
+/// @param {Id.DsList}				_ds_list		The list of objects to test
+/// @description									Check if any of a DS List of object references are solid
+function list_has_solid(_ds_list) 
+{
+	var _solid = false;
+	var _i = ds_list_size(_ds_list);
+	while(_i >= 0)
+	{
+		if(object_get_solid( _ds_list[_i] ))
+		{
+			_solid = true;
+			break;
+		}
+		_i--;
+	}
+	return _solid;	
+}
+/// @function										move_contact(_direction, _max_distance, _object, _step);
+/// @param {Real}					_direction		The direction you want to move in
+/// @param {Real}					_max_distance	The distance you want to move
+/// @param {Asset.GMObject, Array}	_object			The Object you want to not collide with
+/// @param {Real}					_step			How many internal steps do you want to try if there's a collision? [4] Larger is more acurate, but slower.
+/// @description									like move_contact_solid, but with any object or object type
+function move_contact(_direction, _max_distance, _object = "solid", _step = 4) 
+{
+	_step = 1 / _step;
+	if(_step <= 0)
+	{
+		_step = 0.1;
+	}
+	
+	//get x,y, components
+	var _movex = lengthdir_x(_max_distance, _direction)
+	var _movey = lengthdir_y(_max_distance, _direction)
+	
+	var _moved = false;
+	
+	//collision stuff
+	var _collision_list = ds_list_create();
+	//ds_list_clear(_collision_list);
+	var _collision_count = 0;
+	var _solid = false;
+	if(_object == "solid")
+	{
+		_solid = true;
+		_object = all;
+	}
+		
+	//try to move all the way
+	//if collision then 
+	//try to move as far in x and y before hitting the object
+	//use a percentage of the movement values and decrement by 5%
+	for(var i = 1; i > 0; i -= _step)
+	{
+		//get a precentage of the movement
+		var _dx = floor(i * _movex);
+		var _dy = floor(i * _movey);
+		
+		ds_list_clear(_collision_list);
+		_collision_count = instance_place_list(x + _dx, y + _dy, _object, _collision_list, true);
+		if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+		{
+			x += _dx;
+			y += _dy;
+			_moved = true;
+			break;
+		}
+	}
+	
+	return _moved;
+}
+
+
+/// @function									move_slide(_direction, _max_distance, _object, _wide);
+/// @param {Real}				_direction		The Object you want to move away from
+/// @param {Real}				_max_distance	The distance you want to move
+/// @param {Asset.GMObject}		_object			The Object you want to not collide with
+/// @param {Boolean}			_wide			Take a wide sidestep?
+/// @description								like move_contact_solid, but with any object or object type
+function move_slide(_direction, _max_distance, _object = "solid", _wide = false){
+	//use trig to find the x,y portion of movement
+	//dcos, dsin will convert radians and degrees for us
+	var _dx =  _max_distance * dcos(_direction)
+	var _dy = -_max_distance * dsin(_direction)
+	
+	//will use later to see if we actually moved
+	var _current_x = x
+	var _current_y = y
+	
+	
+	//collision stuff
+	var _collision_list = ds_list_create();
+	//ds_list_clear(_collision_list);
+	var _collision_count = 0;
+	var _solid = false;
+	if(_object == "solid")
+	{
+		_solid = true;
+		_object = all;
+	}
+
+	//movement	
+	move_contact(0, _dx, _object);
+	move_contact(270, _dy, _object);
+	
+	//slide?
+	//if we aren't moving then maybe we need to slide on a ramp		
+		
+	//use this to move at about 30/15degrees offest from our main direction
+	//this helps us get around stuff
+	var _side_step = _max_distance / 4;
+	if(_wide)
+	{
+		_side_step = _max_distance / 3;
+	}
+		
+	//do horizontal movement
+	if(_dx != 0)
+	{
+		//try slide up?	
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dx); i > 0; i--) 
+			{
+				/*
+				if( !place_meeting(x + (i * sign(_dx)), y - _side_step, _object) )
+				{
+					x += i * sign(_dx);
+					y -= _max_distance;
+					break;
+				}
+				*/
+				
+				ds_list_clear(_collision_list);
+				_collision_count = instance_place_list(x + (i * sign(_dx)), y - _side_step, _object, _collision_list, true);
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{
+					x += i * sign(_dx);
+					y -= _max_distance;
+					break;
+				}
+			}
+		}
+		//try slide down?			
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dx); i > 0; i--) 
+			{
+				/*
+				if( !place_meeting(x + (i * sign(_dx)), y + _side_step, _object) )
+				{
+					x += i * sign(_dx);
+					y += _max_distance;
+					break;
+				}*/
+				
+				ds_list_clear(_collision_list);
+				_collision_count = instance_place_list(x + (i * sign(_dx)), y + _side_step, _object, _collision_list, true);
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{
+					x += i * sign(_dx);
+					y += _max_distance;
+					break;
+				}
+			}
+		}
+	} 
+	else 
+	{ 
+		//0 == no movement 
+	}
+	
+	//do vertical movement
+	if(_dy != 0)
+	{
+		//try slide right?	
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dy); i > 0; i--) 
+			{
+				/*
+				if( !place_meeting(x + _side_step , y + (i * sign(_dy)), _object) )
+				{
+					x += _max_distance;
+					y += i * sign(_dy);
+					break;
+				}*/
+				
+				ds_list_clear(_collision_list);
+				_collision_count = instance_place_list(x + _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{
+					x += _max_distance;
+					y += i * sign(_dy);
+					break;
+				}
+			}
+		}
+		//try slide left?
+		if(x == _current_x and y == _current_y){
+			for(var i = abs(_dy); i > 0; i--) 
+			{
+				/*
+				if( !place_meeting(x - _side_step , y + (i * sign(_dy)), _object) )
+				{
+					x -= _max_distance;
+					y += i * sign(_dy);
+					break;
+				}*/
+				
+				ds_list_clear(_collision_list);
+				_collision_count = instance_place_list(x - _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{
+					x -= _max_distance;
+					y += i * sign(_dy);
+					break;
+				}
+			}
+		}
+	} 
+	else 
+	{ 
+		//0 == no movement 
+	}
+	
+}
