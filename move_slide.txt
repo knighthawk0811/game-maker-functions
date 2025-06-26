@@ -1,13 +1,15 @@
+
 /// @function										list_has_solid(_ds_list);
 /// @param {Id.DsList}				_ds_list		The list of objects to test
 /// @description									Check if any of a DS List of object references are solid
 function list_has_solid(_ds_list) 
 {
 	var _solid = false;
-	var _i = ds_list_size(_ds_list);
-	while(_i > 0)
+	var _i = ds_list_size(_ds_list) - 1;
+	while(_i >= 0)
 	{
-		if(object_exists( _ds_list[| _i]) && object_get_solid( _ds_list[| _i] ))
+		//show_debug_message("object: {0}", _ds_list[| _i]);
+		if(instance_exists( _ds_list[| _i]) && _ds_list[| _i].solid)
 		{
 			_solid = true;
 			break;
@@ -59,7 +61,7 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 4)
 		
 		ds_list_clear(_collision_list);
 		_collision_count = instance_place_list(x + _dx, y + _dy, _object, _collision_list, true);
-		if( _collision_count == 0 || (_solid && list_has_solid(_collision_list)) )
+		if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
 		{
 			x += _dx;
 			y += _dy;
@@ -121,19 +123,10 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		//try slide up?	
 		if(x == _current_x and y == _current_y){
 			for(var i = abs(_dx); i > 0; i--) 
-			{
-				/*
-				if( !place_meeting(x + (i * sign(_dx)), y - _side_step, _object) )
-				{
-					x += i * sign(_dx);
-					y -= _max_distance;
-					break;
-				}
-				*/
-				
+			{				
 				ds_list_clear(_collision_list);
 				_collision_count = instance_place_list(x + (i * sign(_dx)), y - _side_step, _object, _collision_list, true);
-				if( _collision_count == 0 || (_solid && list_has_solid(_collision_list)) )
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
 				{
 					x += i * sign(_dx);
 					y -= _side_step;
@@ -144,18 +137,10 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		//try slide down?			
 		if(x == _current_x and y == _current_y){
 			for(var i = abs(_dx); i > 0; i--) 
-			{
-				/*
-				if( !place_meeting(x + (i * sign(_dx)), y + _side_step, _object) )
-				{
-					x += i * sign(_dx);
-					y += _max_distance;
-					break;
-				}*/
-				
+			{				
 				ds_list_clear(_collision_list);
 				_collision_count = instance_place_list(x + (i * sign(_dx)), y + _side_step, _object, _collision_list, true);
-				if( _collision_count == 0 || (_solid && list_has_solid(_collision_list)) )
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
 				{
 					x += i * sign(_dx);
 					y += _side_step;
@@ -175,18 +160,10 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		//try slide right?	
 		if(x == _current_x and y == _current_y){
 			for(var i = abs(_dy); i > 0; i--) 
-			{
-				/*
-				if( !place_meeting(x + _side_step , y + (i * sign(_dy)), _object) )
-				{
-					x += _max_distance;
-					y += i * sign(_dy);
-					break;
-				}*/
-				
+			{				
 				ds_list_clear(_collision_list);
 				_collision_count = instance_place_list(x + _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
-				if( _collision_count == 0 || (_solid && list_has_solid(_collision_list)) )
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
 				{
 					x += _side_step;
 					y += i * sign(_dy);
@@ -197,18 +174,10 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		//try slide left?
 		if(x == _current_x and y == _current_y){
 			for(var i = abs(_dy); i > 0; i--) 
-			{
-				/*
-				if( !place_meeting(x - _side_step , y + (i * sign(_dy)), _object) )
-				{
-					x -= _max_distance;
-					y += i * sign(_dy);
-					break;
-				}*/
-				
+			{				
 				ds_list_clear(_collision_list);
 				_collision_count = instance_place_list(x - _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
-				if( _collision_count == 0 || (_solid && list_has_solid(_collision_list)) )
+				if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
 				{
 					x -= _side_step;
 					y += i * sign(_dy);
