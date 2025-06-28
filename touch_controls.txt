@@ -1,0 +1,201 @@
+//PARENT OBJECT
+
+//CREATE
+function input(_touch_id, _touch_x, _touch_y)
+{
+        
+}
+
+function release()
+{
+        
+}
+
+//BEGIN STEP
+var _max_devices = 4;
+
+for (var i = 0; i < _max_devices; i++)
+{
+        var _touch_x = device_mouse_x(i);
+        var _touch_y = device_mouse_y(i);
+        
+        var _ui_at_pos = instance_position(_touch_x, _touch_y, obj_ui_parent);
+        var _held = device_mouse_check_button(i, mb_left);
+        
+        if (_ui_at_pos != noone && _held)
+        {
+                _ui_at_pos.input(i, _touch_x, _touch_y);
+        }
+}
+
+
+//THUMBSTICK OBJECT
+
+//CREATE
+/// @description SETUP
+event_inherited();
+
+moving = false;
+
+speed_default = obj_player_base_class.speed_default;
+touch_distance = 0;
+touch_speed = 0;
+dir_current = 0;
+
+
+_camera = view_get_camera(0); // get camera object
+_camera_x = camera_get_view_x(_camera);
+_camera_y = camera_get_view_y(_camera);
+_camera_width = camera_get_view_width(_camera);
+_camera_height = camera_get_view_height(_camera);
+x = _camera_x + 150;
+y = _camera_y + _camera_height - 150;
+
+move_origin_x = x;
+move_origin_y = y;
+touch_id = -1;
+touch_x = move_origin_x;
+touch_y = move_origin_y;
+
+function input(_touch_id, _touch_x, _touch_y)
+{
+    touch_id = _touch_id;
+	touch_x = _touch_x;
+	touch_y = _touch_y;
+}
+
+function release()
+{
+	move_origin_x = x;
+	move_origin_y = y;
+	touch_speed = 0;
+	moving = false;	
+    touch_id = -1;
+    touch_x = x;
+    touch_y = y;
+}
+
+
+//BEGIN STEP
+/// @description MOVEMENT
+event_inherited();
+
+if(global._camera_moving)
+{		
+	move_origin_x = x;
+	move_origin_y = y;
+}
+
+if (touch_id != -1)
+{
+	if(device_mouse_check_button_pressed(touch_id, mb_left))
+	{
+		move_origin_x = device_mouse_x(touch_id);
+		move_origin_y = device_mouse_y(touch_id);
+		moving = true;		
+	}
+	
+    if (device_mouse_check_button(touch_id, mb_left))
+    {
+		moving = true;		
+        touch_x = device_mouse_x(touch_id);
+        touch_y = device_mouse_y(touch_id);
+    }
+    else
+    {
+        release();
+    }	
+	
+	if(device_mouse_check_button_released(touch_id, mb_left))
+	{
+		release();
+	}
+}
+
+
+
+if(moving){
+
+	dir_current = point_direction(move_origin_x, move_origin_y, touch_x, touch_y);
+	touch_distance = point_distance(move_origin_x, move_origin_y, touch_x, touch_y);
+	touch_speed = clamp((touch_distance / 50) * speed_default, 0, speed_default);		
+}
+
+
+//DRAW
+/// @description THUMBSTICK
+event_inherited();
+
+_camera_x = camera_get_view_x(_camera);
+_camera_y = camera_get_view_y(_camera);
+_camera_width = camera_get_view_width(_camera);
+_camera_height = camera_get_view_height(_camera);
+x = _camera_x + 150;
+y = _camera_y + _camera_height - 150;
+
+
+//image_alpha = 0.5;
+draw_self();
+
+
+//mouse_distance = 0;
+//mouse_speed = 0;
+var _radius = (sprite_width / 2) - 20;
+var _new_x = clamp(touch_x,x - abs(lengthdir_x(_radius, dir_current)), x + abs(lengthdir_x(_radius, dir_current)));
+var _new_y = clamp(touch_y,y - abs(lengthdir_y(_radius, dir_current)), y + abs(lengthdir_y(_radius, dir_current)));
+
+
+if(moving)
+{
+	draw_sprite_ext(spr_thumbstick,1,_new_x, _new_y,1,1,dir_current,c_white,1);
+	
+	//draw_line(move_origin_x,move_origin_y,touch_x,touch_y);
+	
+	//draw_line(x,y,touch_x,touch_y);
+}
+
+
+//ATTACK BUTTON
+
+//CREATE
+/// @description SETUP
+
+event_inherited();
+
+attacking = false;
+
+_camera = view_get_camera(0); // get camera object
+
+touch_id = -1;
+touch_x = x;
+touch_y = y;
+
+function input(_touch_id, _touch_x, _touch_y)
+{
+	attacking = true;
+    touch_id = _touch_id;
+	touch_x = _touch_x;
+	touch_y = _touch_y;
+}
+
+function release()
+{
+	attacking = false;	
+    touch_id = -1;
+    touch_x = x;
+    touch_y = y;
+}
+
+
+//BEGIN STEP
+
+event_inherited();
+
+release();
+
+_camera_x = camera_get_view_x(_camera);
+_camera_y = camera_get_view_y(_camera);
+_camera_width = camera_get_view_width(_camera);
+_camera_height = camera_get_view_height(_camera);
+x = _camera_x + _camera_width - 150;
+y = _camera_y + _camera_height - 150;
