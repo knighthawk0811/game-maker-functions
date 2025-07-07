@@ -43,13 +43,21 @@ touch_speed = 0;
 dir_current = 0;
 
 
-_camera = view_get_camera(0); // get camera object
-_camera_x = camera_get_view_x(_camera);
-_camera_y = camera_get_view_y(_camera);
-_camera_width = camera_get_view_width(_camera);
-_camera_height = camera_get_view_height(_camera);
-x = _camera_x + 150;
-y = _camera_y + _camera_height - 150;
+
+_view_x = 0;
+_view_y = 0;
+_view_width = room_width;
+_view_height = room_height;
+if(view_visible[0])
+{
+	_camera = view_get_camera(0); // get camera object
+	_view_x = camera_get_view_x(_camera);
+	_view_y = camera_get_view_y(_camera);
+	_view_width = camera_get_view_width(_camera);
+	_view_height = camera_get_view_height(_camera);		
+}
+x = _view_x + 150;
+y = _view_y + _view_height - 150;
 
 move_origin_x = x;
 move_origin_y = y;
@@ -126,12 +134,13 @@ if(moving){
 /// @description THUMBSTICK
 event_inherited();
 
-_camera_x = camera_get_view_x(_camera);
-_camera_y = camera_get_view_y(_camera);
-_camera_width = camera_get_view_width(_camera);
-_camera_height = camera_get_view_height(_camera);
-x = _camera_x + 150;
-y = _camera_y + _camera_height - 150;
+if(view_visible[0])
+{
+	_view_x = camera_get_view_x(_camera);
+	_view_y = camera_get_view_y(_camera);	
+}
+x = _view_x + 150;
+y = _view_y + _view_height - 150;
 
 
 //image_alpha = 0.5;
