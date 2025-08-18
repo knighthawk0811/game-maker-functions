@@ -1,3 +1,15 @@
+//GLOBAL VARIABLES
+//main camera
+global._camera_moving = false;
+global._camera = view_get_camera(0); // get camera object
+if(view_visible[0])
+{
+	//global._camera_x = camera_get_view_x(global._camera);
+	//global._camera_y = camera_get_view_y(global._camera);
+	global._camera_width = camera_get_view_width(global._camera);
+	global._camera_height = camera_get_view_height(global._camera);
+}
+
 //PARENT OBJECT
 
 //CREATE
