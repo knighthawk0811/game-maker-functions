@@ -1,0 +1,31 @@
+//GM Funcitons that are not found in the LTS version
+if(!is_undefined(array_contains) && !is_method(array_contains))
+{	
+	/// @function						array_contains(_my_array, _my_value);
+	/// @param {array}	 _my_array		The array you want to search
+	/// @param {any}	 _my_value		The thing you are searhcing for
+	/// @description					certain verison of GM are missing array_contains, use this as a replacement
+	function array_contains(_my_array, _my_value){
+		for(i=0;i < array_length(_my_array); i++){
+			if array_get(_my_array, i) == _my_value{
+				return true;
+			}
+		}
+		return false
+	}
+}
+if(!is_undefined(array_get_index) && !is_method(array_get_index))
+{	
+	/// @function						array_get_index(_my_array, _my_value);
+	/// @param {array}	 _my_array		The array you want to search
+	/// @param {any}	 _my_value		The thing you are searhcing for
+	/// @description					certain verison of GM are missing array_contains, use this as a replacement
+	function array_get_index(_my_array, _my_value){
+		for(i=0;i < array_length(_my_array); i++){
+			if array_get(_my_array, i) == _my_value{
+				return i;
+			}
+		}
+		return -1;
+	}
+}
