@@ -1,0 +1,99 @@
+//code for using controllers in your game
+
+
+//CREATE EVENT
+//controller
+game_controller = [];
+
+
+//Async System EVENT
+//controllers
+switch(async_load[? "event_type"])   
+{
+	case "gamepad discovered":  
+	    var _controller = async_load[? "pad_index"];
+	    gamepad_set_axis_deadzone(_controller, 0.1);
+		gamepad_set_button_threshold(_controller, 0.1);
+	    array_push(game_controller, _controller);
+		
+		//custom mapping
+		//output the existing mapping
+		//then modify it and put that below
+		show_debug_message(gamepad_get_mapping(_controller)); 
+		if(gamepad_get_description(_controller) == "Retro Controller")
+		{
+			gamepad_test_mapping(_controller,"03000000790000001100000000000000,Retro Controller,platform:Windows,a:b1,b:b2,x:b0,y:b3,leftshoulder:b6,rightshoulder:b4,lefttrigger:b7,righttrigger:b5,start:b9,back:b8,lefty:a4,leftx:a3,");
+		}
+	break;
+	
+	case "gamepad lost":  
+	    var _controller = async_load[? "pad_index"];
+	    var _index = array_get_index(game_controller, _controller);
+	    array_delete(game_controller, _index, 1);
+	break;
+}
+
+
+//STEP EVENT
+//controller movement
+if (array_length(game_controller) > 0)
+{		    
+	//Use a standard movement code here
+	//then modify keyboard check for controllers and their buttons
+	
+	//XInput vs DirectInput?
+	//GM controllers use a numbering scheme
+	//XInput uses 0-3
+	//DirectInput uses 4-20
+			
+	//which controller are we using?
+	if(gamepad_get_description(game_controller[0]) == "Standard Gamepad")
+	{
+		//xbox
+		//D-pad 
+		//use normal movement and replace the keyboard check button presses					
+	}
+	else if( (game_controller[0] < 4) || (gamepad_get_description(game_controller[0]) == "Retro Controller") )
+	{
+		//XInput Controller	
+		//or
+		//custom mapped retro controller	
+		//use the axis
+		_vspd = gamepad_axis_value(game_controller[0], gp_axislv);
+		_hspd = gamepad_axis_value(game_controller[0], gp_axislh);			
+	}
+	else
+	{
+		//DirectInput Controller				
+		//use D-pad, but it's different					
+		//directinput controllers use a pseudo axis on the d-pad
+				
+		//vertical
+		if(gamepad_button_check(game_controller[0], gp_padd)){
+			_down = 1;
+		}
+		else if(!gamepad_button_check(game_controller[0], gp_padu)){
+			_up = 1;
+		}
+		//horizontal
+		if(gamepad_button_check(game_controller[0], gp_padr)){
+			_right = 1;
+		}
+		else if(!gamepad_button_check(game_controller[0], gp_padl)){
+			_left = 1;
+		}
+				
+		// combine to get horizontal and vertical directions
+		_hspd = _right - _left;
+		_vspd = _down - _up;
+	}
+			
+	//if there is valid movement
+	if ( _hspd != 0 || _vspd != 0 )
+	{
+		// get absolute direction
+		dir_current = point_direction(0, 0, _hspd, _vspd);
+		//use custom movement function(s)
+		move_slide(dir_current,speed_default);
+	}
+}	
