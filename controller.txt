@@ -30,8 +30,8 @@ switch(async_load[? "event_type"])
 		//custom mapping
 		//output the existing mapping & GUID
 		//then modify the map below
-		show_debug_message(gamepad_get_mapping(_controller)); 
 		show_debug_message(gamepad_get_guid(_controller));
+		show_debug_message(gamepad_get_mapping(_controller)); 
 		if(gamepad_get_guid(_controller) == "03000000790000001100000000000000" )
 		{
 			//CUSTOM Controller Mapping
@@ -161,7 +161,6 @@ for (var i = 0; i < 12; i++;)
     draw_text(xx, yy + (_line_height * _num++), "Gamepad Slot - " + string(i));
     draw_text(xx, yy + (_line_height * _num++), "Gamepad Type - " + string(gamepad_get_description(i)));
     draw_text(xx, yy + (_line_height * _num++), "Gamepad GUID - " + string(gamepad_get_guid(i)));
-    draw_text(xx, yy + (_line_height * _num++), "Mappings - " + string(gamepad_get_mapping(i)));  
     draw_text(xx, yy + (_line_height * _num++), "Button Count - " + string(gamepad_button_count(i)));
     draw_text(xx, yy + (_line_height * _num++), "Axis Count - " + string(gamepad_axis_count(i)));
     draw_text(xx, yy + (_line_height * _num++), "Face 1 - " + string(gamepad_button_check(i, gp_face1)));
