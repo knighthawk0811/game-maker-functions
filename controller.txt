@@ -16,29 +16,30 @@ switch(async_load[? "event_type"])
 	    gamepad_set_axis_deadzone(_controller, 0.1);
 		gamepad_set_button_threshold(_controller, 0.1);
 	    array_push(game_controller, _controller);
-		
-		//custom mapping
-		//output the existing mapping
-		//then modify it and put that below
-		show_debug_message(gamepad_get_mapping(_controller)); 
-		show_debug_message(gamepad_get_guid(_controller));
-		
-		
+				
 		if(_controller >= 4)
 		{
 			var _controller_guid = gamepad_get_guid(_controller);
 			//USB Retro Gamepad
 			game_controller_mapped = true;
-			gamepad_test_mapping(_controller, _controller_guid + ",USB Retro Gamepad,platform:Windows,a:b1,b:b2,x:b0,y:b3,leftshoulder:b6,rightshoulder:b4,lefttrigger:b7,righttrigger:b5,start:b9,back:b8,lefty:a4,leftx:a3,");
+			gamepad_test_mapping(_controller, _controller_guid + 
+			",USB Retro Gamepad,platform:Windows,a:b1,b:b2,x:b0,y:b3,leftshoulder:b4,rightshoulder:b5,lefttrigger:b6,righttrigger:b7,start:b9,guide:b8,lefty:a4,leftx:a3,");
 		}
+		
 		/*
+		//custom mapping
+		//output the existing mapping & GUID
+		//then modify the map below
+		show_debug_message(gamepad_get_mapping(_controller)); 
+		show_debug_message(gamepad_get_guid(_controller));
 		if(gamepad_get_guid(_controller) == "03000000790000001100000000000000" )
 		{
-			//CUSTOM Controller
+			//CUSTOM Controller Mapping
 			game_controller_mapped = true;
-			gamepad_test_mapping(_controller,"03000000790000001100000000000000,CUSTOM Controller,platform:Windows,a:b1,b:b2,x:b0,y:b3,leftshoulder:b6,rightshoulder:b4,lefttrigger:b7,righttrigger:b5,start:b9,back:b8,lefty:a4,leftx:a3,");
+			gamepad_test_mapping(_controller,
+			"03000000790000001100000000000000,CUSTOM Controller,platform:Windows,a:b1,b:b2,x:b0,y:b3,leftshoulder:b4,rightshoulder:b5,lefttrigger:b6,righttrigger:b7,start:b9,guide:b8,lefty:a4,leftx:a3,");
 		}
-		*/
+		//*/
 	break;
 	
 	case "gamepad lost":  
@@ -53,11 +54,16 @@ switch(async_load[? "event_type"])
 //controller movement
 if (array_length(game_controller) > 0)
 {		    
-	//Use a standard movement code here
-	//then modify keyboard check for controllers and their buttons
 	
-	//XInput vs DirectInput?
-	//GM controllers use a numbering scheme
+	image_index = 1;
+	// prime the temp values
+	_up = 0;
+	_down = 0;
+	_left = 0;
+	_right = 0;
+	_hspd = 0;
+	_vspd = 0;
+	//XInput or DirectInput?
 	//XInput uses 0-3
 	//DirectInput uses 4-20
 			
@@ -127,3 +133,57 @@ if (array_length(game_controller) > 0)
 		move_slide(dir_current,speed_default);
 	}
 }	
+
+
+//Draw GUI
+//Test Controller Button Presses
+/// @description GUI
+
+//*
+var _xx = 130;
+var _yy = 70;
+var _line_height = 16;
+draw_set_color(c_black);
+draw_text(_xx, _yy + (_line_height * 0), "REQUIRES A CONTROLLER");
+//*/
+
+
+//controller
+//*
+var _num = 0;
+for (var i = 0; i < 12; i++;)
+{
+	var xx = 130;
+	var yy = 120;
+	if gamepad_is_connected(i)
+    {a
+    _num = 1;
+    draw_text(xx, yy + (_line_height * _num++), "Gamepad Slot - " + string(i));
+    draw_text(xx, yy + (_line_height * _num++), "Gamepad Type - " + string(gamepad_get_description(i)));
+    draw_text(xx, yy + (_line_height * _num++), "Gamepad GUID - " + string(gamepad_get_guid(i)));
+    draw_text(xx, yy + (_line_height * _num++), "Mappings - " + string(gamepad_get_mapping(i)));  
+    draw_text(xx, yy + (_line_height * _num++), "Button Count - " + string(gamepad_button_count(i)));
+    draw_text(xx, yy + (_line_height * _num++), "Axis Count - " + string(gamepad_axis_count(i)));
+    draw_text(xx, yy + (_line_height * _num++), "Face 1 - " + string(gamepad_button_check(i, gp_face1)));
+    draw_text(xx, yy + (_line_height * _num++), "Face 2 - " + string(gamepad_button_check(i, gp_face2)));
+    draw_text(xx, yy + (_line_height * _num++), "Face 3 - " + string(gamepad_button_check(i, gp_face3)));
+    draw_text(xx, yy + (_line_height * _num++), "Face 4 - " + string(gamepad_button_check(i, gp_face4)));
+    draw_text(xx, yy + (_line_height * _num++), "D-Pad up - " + string(gamepad_button_check(i, gp_padu)));
+    draw_text(xx, yy + (_line_height * _num++), "D-Pad down - " + string(gamepad_button_check(i, gp_padd)));
+    draw_text(xx, yy + (_line_height * _num++), "D-Pad left - " + string(gamepad_button_check(i, gp_padl)));
+    draw_text(xx, yy + (_line_height * _num++), "D-Pad right - " + string(gamepad_button_check(i, gp_padr)));   
+    draw_text(xx, yy + (_line_height * _num++), "Left H Axis - " + string(gamepad_axis_value(i, gp_axislh)));
+    draw_text(xx, yy + (_line_height * _num++), "Left V Axis - " + string(gamepad_axis_value(i, gp_axislv)));
+    draw_text(xx, yy + (_line_height * _num++), "Right H Axis - " + string(gamepad_axis_value(i, gp_axisrh)));
+    draw_text(xx, yy + (_line_height * _num++), "Right V Axis - " + string(gamepad_axis_value(i, gp_axisrv))); 
+    draw_text(xx, yy + (_line_height * _num++), "Stick L - " + string(gamepad_button_check(i, gp_stickl)));
+    draw_text(xx, yy + (_line_height * _num++), "Stick R - " + string(gamepad_button_check(i, gp_stickr)));
+    draw_text(xx, yy + (_line_height * _num++), "Shoulder L - " + string(gamepad_button_check(i, gp_shoulderl)));
+    draw_text(xx, yy + (_line_height * _num++), "Shoulder LB - " + string(gamepad_button_check(i, gp_shoulderlb)));
+    draw_text(xx, yy + (_line_height * _num++), "Shoulder R - " + string(gamepad_button_check(i, gp_shoulderr)));
+    draw_text(xx, yy + (_line_height * _num++), "Shoulder RB - " + string(gamepad_button_check(i, gp_shoulderrb)));
+    draw_text(xx, yy + (_line_height * _num++), "Select - " + string(gamepad_button_check(i, gp_select)));
+    draw_text(xx, yy + (_line_height * _num++), "Start - " + string(gamepad_button_check(i, gp_start)));
+    }
+}
+//*/
