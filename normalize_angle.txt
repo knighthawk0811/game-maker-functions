@@ -1,0 +1,15 @@
+/// @function						normalize_angle(_angle)
+/// @description					returns an value between 0 - 360
+/// @param {real}  _angle			The angle you want to normalize
+function normalize_angle(_angle)
+{
+	if(_angle > 360)
+	{
+		_angle -= 360;
+	}
+	if(_angle < 0)
+	{
+		_angle += 360;
+	}	
+	return _angle;
+}
