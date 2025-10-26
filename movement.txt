@@ -1,0 +1,337 @@
+///description All movement functions in one place
+
+
+
+
+/// @function										list_has_solid(_ds_list);
+/// @param {Id.DsList}				_ds_list		The list of objects to test
+/// @description									Check if any of a DS List of object references are solid
+function list_has_solid(_ds_list) 
+{
+	var _solid = false;
+	var _i = ds_list_size(_ds_list) - 1;
+	while(_i >= 0)
+	{
+		//show_debug_message("object: {0}", _ds_list[| _i]);
+		if(instance_exists( _ds_list[| _i]) && _ds_list[| _i].solid)
+		{
+			_solid = true;
+			break;
+		}
+		_i--;
+	}
+	return _solid;	
+}
+/// @function										move_contact(_direction, _max_distance, _object, _step);
+/// @param {Real}					_direction		The direction you want to move in
+/// @param {Real}					_max_distance	The distance you want to move
+/// @param {Asset.GMObject, Array, String}	_object			The Object you want to not collide with
+/// @param {Real}					_step			How many internal steps do you want to try if there's a collision? [4] Larger is more acurate, but slower.
+/// @description									like move_contact_solid, but with any object or object type
+function move_contact(_direction, _max_distance, _object = "solid", _step = 4) 
+{	
+	//will use later to see if we actually moved
+	var _current_x = x
+	var _current_y = y
+	
+	//how many steps of movement testing will we do?
+	_step = 1 / _step;
+	if(_step <= 0)
+	{
+		_step = 0.1;
+	}
+	
+	//get x,y, components
+	var _movex = lengthdir_x(_max_distance, _direction)
+	var _movey = lengthdir_y(_max_distance, _direction)
+	
+	var _moved = false;
+	
+	//collision stuff
+	var _collision_list = ds_list_create();
+	//ds_list_clear(_collision_list);
+	var _collision_count = 0;
+	var _solid = false;
+	if(_object == "solid")
+	{
+		_solid = true;
+		_object = all;
+	}
+		
+	//try to move all the way
+	//if collision then 
+	//try to move as far in x and y before hitting the object
+	//use a percentage of the movement values and decrement by 5%
+	for(var i = 1; i > 0; i -= _step)
+	{
+		//get a precentage of the movement
+		var _dx = floor(i * _movex);
+		var _dy = floor(i * _movey);
+		
+		ds_list_clear(_collision_list);
+		_collision_count = instance_place_list(x + _dx, y + _dy, _object, _collision_list, true);
+		if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+		{			
+			x += _dx;
+			y += _dy;
+			break;
+		}
+	}
+	
+	//have we actually moved?
+	if(x != _current_x || y != _current_y)
+	{
+		_moved = true;
+	}
+	
+	return _moved;
+}
+
+
+/// @function													move_slide(_direction, _max_distance, _object, _wide);
+/// @param {Real}								_direction		The Object you want to move away from
+/// @param {Real}								_max_distance	The distance you want to move
+/// @param {Asset.GMObject, Array, String}		_object			The Object you want to not collide with
+/// @param {Boolean}							_wide			Take a wide sidestep?
+/// @description												like move_contact_solid, but with any object or object type
+function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
+{
+	//will use later to see if we actually moved
+	var _current_x = x
+	var _current_y = y
+	
+	//use trig to find the x,y portion of movement
+	//dcos, dsin will convert radians and degrees for us
+	var _dx =  _max_distance * dcos(_direction)
+	var _dy = -_max_distance * dsin(_direction)
+	
+	//can move normally?	
+	var _moved_h = move_contact(0, _dx, _object);
+	var _moved_v = move_contact(270, _dy, _object);
+	var _moved = _moved_h || _moved_v;
+	
+	//slide?
+	//if we aren't moving then maybe we need to slide on a ramp		
+	if(!_moved)
+	{
+		//collision stuff
+		var _collision_list = ds_list_create();
+		//ds_list_clear(_collision_list);
+		var _collision_count = 0;
+		var _solid = false;
+		if(_object == "solid")
+		{
+			_solid = true;
+			_object = all;
+		}
+		
+		//use this to move at about 30/15degrees offest from our main direction
+		//this helps us get around stuff
+		var _side_step = _max_distance / 4;
+		if(_wide)
+		{
+			_side_step = _max_distance / 3;
+		}
+		
+		//do horizontal movement
+		if(_dx != 0)
+		{
+			//try slide up?	
+			if(x == _current_x and y == _current_y)
+			{
+				for(var i = abs(_dx); i > 0; i--) 
+				{				
+					ds_list_clear(_collision_list);
+					_collision_count = instance_place_list(x + (i * sign(_dx)), y - _side_step, _object, _collision_list, true);
+					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+					{
+						x += i * sign(_dx);
+						y -= _side_step;
+						break;
+					}
+				}
+			}
+			//try slide down?			
+			if(x == _current_x and y == _current_y)
+			{
+				for(var i = abs(_dx); i > 0; i--) 
+				{				
+					ds_list_clear(_collision_list);
+					_collision_count = instance_place_list(x + (i * sign(_dx)), y + _side_step, _object, _collision_list, true);
+					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+					{
+						x += i * sign(_dx);
+						y += _side_step;
+						break;
+					}
+				}
+			}
+		} 
+		else 
+		{ 
+			//0 == no movement 
+		}
+	
+		//do vertical movement
+		if(_dy != 0)
+		{
+			//try slide right?	
+			if(x == _current_x and y == _current_y)
+			{
+				for(var i = abs(_dy); i > 0; i--) 
+				{				
+					ds_list_clear(_collision_list);
+					_collision_count = instance_place_list(x + _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
+					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+					{
+						x += _side_step;
+						y += i * sign(_dy);
+						break;
+					}
+				}
+			}
+			//try slide left?
+			if(x == _current_x and y == _current_y)
+			{
+				for(var i = abs(_dy); i > 0; i--) 
+				{				
+					ds_list_clear(_collision_list);
+					_collision_count = instance_place_list(x - _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
+					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+					{
+						x -= _side_step;
+						y += i * sign(_dy);
+						break;
+					}
+				}
+			}
+		} 
+		else 
+		{ 
+			//0 == no movement 
+		}	
+	}
+}
+
+
+
+/// @function						deflect(_object, _max_dis);
+/// @param {Id.Instance}  _object	The Object you want to move away from
+/// @param {real}  _max_dis			The distance you want to move
+/// @description					find the center of self/other and move away by the given distance
+function deflect(_object, _max_dis = 1)
+{
+	//get center of self
+	var _x = ((self.bbox_right - self.bbox_left) / 2) + self.bbox_left;
+	var _y = ((self.bbox_bottom - self.bbox_top) / 2) + self.bbox_top;
+	
+	//get center of other
+	var _ox = _object.x;
+	var _oy = _object.y;
+	try{
+		if(!variable_instance_exists(_object, bbox_left))
+		{
+			throw  ("NO BBOX");
+		}
+	}
+	catch (_error)
+	{
+		var _object_bbox = get_instance_bbox(_object);
+		_ox = ((_object_bbox[1] - _object_bbox[0]) / 2) + _object_bbox[0];
+		_oy = ((_object_bbox[3] - _object_bbox[2]) / 2) + _object_bbox[2];
+	}
+
+	//get direction to move away
+	var _away = point_direction(_ox,_oy,_x,_y);
+	
+	return move_direction(_away, _max_dis);
+}
+
+
+/// @function						get_instance_bbox(_inst);
+/// @param {Id.Instance}  _inst		The Object you want to get the bbox for
+/// @description					find the left,right,top,bottom bboxes
+function get_instance_bbox(_inst) {
+    var _spr = _inst.sprite_index;
+    if (_spr == -1) {
+        // Fallback if no sprite
+        return [_inst.x, _inst.x, _inst.y, _inst.y];
+    }
+    
+    var _width = sprite_get_width(_spr) * abs(_inst.image_xscale);
+    var _height = sprite_get_height(_spr) * abs(_inst.image_yscale);
+    var _origin_x = sprite_get_xoffset(_spr);
+    var _origin_y = sprite_get_yoffset(_spr);
+    
+    // Calculate bbox based on origin point
+    var _left = _inst.x - _origin_x;
+    var _right = _left + _width;
+    var _top = _inst.y - _origin_y;
+    var _bottom = _top + _height;
+    
+    return [_left, _right, _top, _bottom];
+}
+
+/// @function										move_direction(_direction, _distance);
+/// @param {Real}					_direction		The direction you want to move in
+/// @param {Real}					_distance		The distance you want to move
+/// @description									just move, but keep speed proper with regard to x,y
+function move_direction(_direction, _distance) 
+{	
+	//get x,y, components
+	var _dx = lengthdir_x(_distance, _direction)
+	var _dy = lengthdir_y(_distance, _direction)
+	//move
+	x += _dx;
+	y += _dy;
+	
+	//return wether or not we moved
+	if(_dx != 0 || _dy != 0){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+/// @function						direction_selection();
+/// @description					returns one of any directions
+/// @param {real}  _count			The number of possible directions you want to divide 360 into
+function direction_selection(_count = 8){
+	if(_count <= 360)
+	{
+		switch(_count)
+		{
+			case 0:
+				return 0;
+			case 4:
+				return choose(0,90,180,270);
+			break;
+			case 8:
+				return choose(0,45,90,135,180,215,270,315);
+			break;
+			default:
+				// choice * step
+				return floor(irandom_range(0, _count) * (360 / _count));
+			break;
+		}
+	}
+	//fail safe
+	return 0;
+}
+
+/// @function						normalize_angle(_angle)
+/// @description					returns an value between 0 - 360
+/// @param {real}  _angle			The angle you want to normalize
+function normalize_angle(_angle)
+{
+	if(_angle > 360)
+	{
+		_angle -= 360;
+	}
+	if(_angle < 0)
+	{
+		_angle += 360;
+	}	
+	return _angle;
+}
