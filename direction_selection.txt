@@ -1,26 +1,2 @@
-
-/// @function						direction_selection();
-/// @description					returns one of any directions
-/// @param {real}  _count			The number of possible directions you want to divide 360 into
-function direction_selection(_count = 8){
-	if(_count <= 360)
-	{
-		switch(_count)
-		{
-			case 0:
-				return 0;
-			case 4:
-				return choose(0,90,180,270);
-			break;
-			case 8:
-				return choose(0,45,90,135,180,215,270,315);
-			break;
-			default:
-				// choice * step
-				return floor(irandom_range(0, _count) * (360 / _count));
-			break;
-		}
-	}
-	//fail safe
-	return 0;
-}
+see 
+https://github.com/knighthawk0811/game-maker-functions/blob/main/movement.txt
