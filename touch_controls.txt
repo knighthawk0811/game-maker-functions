@@ -1,3 +1,4 @@
+//************************************************************//
 //GLOBAL VARIABLES
 //main camera
 global._camera_moving = false;
@@ -10,213 +11,167 @@ if(view_visible[0])
 	global._camera_height = camera_get_view_height(global._camera);
 }
 
+//************************************************************//
 //PARENT OBJECT
-
-//CREATE
-function input(_touch_id, _touch_x, _touch_y)
-{
-        
-}
-
-function release()
-{
-        
-}
-
-//BEGIN STEP
-var _max_devices = 4;
-
-for (var i = 0; i < _max_devices; i++)
-{
-        var _touch_x = device_mouse_x(i);
-        var _touch_y = device_mouse_y(i);
-        
-        var _ui_at_pos = instance_position(_touch_x, _touch_y, obj_ui_parent);
-        var _held = device_mouse_check_button(i, mb_left);
-        
-        if (_ui_at_pos != noone && _held)
-        {
-                _ui_at_pos.input(i, _touch_x, _touch_y);
-        }
-}
-
-
-//THUMBSTICK OBJECT
-
-//CREATE
-/// @description SETUP
-event_inherited();
-
-moving = false;
-
-speed_default = obj_player_base_class.speed_default;
-touch_distance = 0;
-touch_speed = 0;
-dir_current = 0;
-
-
-
-_view_x = 0;
-_view_y = 0;
-_view_width = room_width;
-_view_height = room_height;
-if(view_visible[0])
-{
-	_camera = view_get_camera(0); // get camera object
-	_view_x = camera_get_view_x(_camera);
-	_view_y = camera_get_view_y(_camera);
-	_view_width = camera_get_view_width(_camera);
-	_view_height = camera_get_view_height(_camera);		
-}
-x = _view_x + 150;
-y = _view_y + _view_height - 150;
-
-move_origin_x = x;
-move_origin_y = y;
+//CREATE EVENT
+//common variables
 touch_id = -1;
-touch_x = move_origin_x;
-touch_y = move_origin_y;
+touch_x = x;
+touch_y = y;
+touch_pressed = false;
+press_x = x;
+press_y = y;
 
-function input(_touch_id, _touch_x, _touch_y)
+//template functions
+//ALL ui elements need to make these functions work
+
+//actively get input
+//called only by the activator
+function input(_touch_id, _touch_x, _touch_y, _pressed = false)
 {
     touch_id = _touch_id;
 	touch_x = _touch_x;
-	touch_y = _touch_y;
+	touch_y = _touch_y; 
+	touch_pressed = _pressed;
+	if(_pressed)
+	{
+		press_x = _touch_x;
+		press_y = _touch_y;
+	}
 }
-
+//no longer getting input
+//called on the end step
 function release()
-{
-	move_origin_x = x;
-	move_origin_y = y;
-	touch_speed = 0;
-	moving = false;	
+{	
     touch_id = -1;
     touch_x = x;
-    touch_y = y;
+    touch_y = y;   
+	touch_pressed = false; 
+	press_x = x;
+	press_y = y;    
 }
-
-
-//BEGIN STEP
-/// @description MOVEMENT
-event_inherited();
-
-if(global._camera_moving)
-{		
-	move_origin_x = x;
-	move_origin_y = y;
-}
-
-if (touch_id != -1)
+//is this UI button being held or pressed?
+function is_held()
 {
-	if(device_mouse_check_button_pressed(touch_id, mb_left))
+	if(touch_id == -1)
 	{
-		move_origin_x = device_mouse_x(touch_id);
-		move_origin_y = device_mouse_y(touch_id);
-		moving = true;		
+		return false;	
 	}
-	
-    if (device_mouse_check_button(touch_id, mb_left))
-    {
-		moving = true;		
-        touch_x = device_mouse_x(touch_id);
-        touch_y = device_mouse_y(touch_id);
-    }
-    else
-    {
-        release();
-    }	
-	
+	return true;
+}
+//was this UI button pressed on this frame?
+function is_pressed()
+{
+	if(touch_pressed)
+	{
+		return true;	
+	}
+	return false;
+}
+//was this touch released?
+function is_released()
+{
 	if(device_mouse_check_button_released(touch_id, mb_left))
 	{
 		release();
+		return true;	
 	}
+	return false;
 }
 
+//END STEP EVENT
+is_released();
 
+//************************************************************//
+//ACTIVATOR OBJECT (NOT A CHILD)
+//BEGIN STEP
+//how many touch points?
+var _max_devices = 4;
 
-if(moving){
-
-	dir_current = point_direction(move_origin_x, move_origin_y, touch_x, touch_y);
-	touch_distance = point_distance(move_origin_x, move_origin_y, touch_x, touch_y);
-	touch_speed = clamp((touch_distance / 50) * speed_default, 0, speed_default);		
+//check all 4 touches
+for (var i = 0; i < _max_devices; i++)
+{
+	//touch location on screen
+    var _touch_x = device_mouse_x(i);
+    var _touch_y = device_mouse_y(i);
+        
+	//is there a ui element at this location?
+    var _ui_at_pos = instance_position(_touch_x, _touch_y, obj_ui_touch_parent);
+	//is the touch actually happening or is it just the mouse is sitting there not being pressed?
+    var _held = device_mouse_check_button(i, mb_left);
+    var _pressed = device_mouse_check_button_pressed(i, mb_left);
+    
+	//if the user is actually touching a ui button
+    if (_held && _ui_at_pos != noone)
+    {
+		//call the input funciton for that ui element
+		_ui_at_pos.input(i, _touch_x, _touch_y, _pressed);
+    }
 }
 
+//************************************************************//
+//UI BUTTON OBJECT
+//CHILD of the parent
+//END STEP EVENT
+event_inherited();
+//set your x,y where you wan tthis button on screen
+x = camera_get_view_x(global._camera) + global._camera_width - 220;
+y = global._camera_height - 110;
 
-//DRAW
-/// @description THUMBSTICK
+//************************************************************//
+//THUMBSTICK OBJECT
+//CREATE EVENT
+/// @description SETUP
+event_inherited();
 event_inherited();
 
-if(view_visible[0])
+
+//get movement direction
+function get_direction()
 {
-	_view_x = camera_get_view_x(_camera);
-	_view_y = camera_get_view_y(_camera);	
+	return point_direction(press_x, press_y, touch_x, touch_y);
 }
-x = _view_x + 150;
-y = _view_y + _view_height - 150;
+//get a value for how far the thumbstick has been pushed
+// from 0 - 1
+function get_speed_factor()
+{	
+	return clamp(point_distance(press_x, press_y, touch_x, touch_y) / (sprite_width / 2), 0, 1);	
+}
 
+//BEGIN STEP
+//we need the current location for as long as this touch is held
+//no matter if the touch leaves the thumbstick sprite
+if (is_held())
+{		
+	touch_x = device_mouse_x(touch_id);
+    touch_y = device_mouse_y(touch_id);
+}
 
-//image_alpha = 0.5;
-draw_self();
+//DRAW
+event_inherited();
 
+//get x,y of camera
+x = camera_get_view_x(global._camera) + 150;
+y = camera_get_view_y(global._camera) + global._camera_height - 150;
 
-//mouse_distance = 0;
-//mouse_speed = 0;
-var _radius = (sprite_width / 2) - 20;
-var _new_x = clamp(touch_x,x - abs(lengthdir_x(_radius, dir_current)), x + abs(lengthdir_x(_radius, dir_current)));
-var _new_y = clamp(touch_y,y - abs(lengthdir_y(_radius, dir_current)), y + abs(lengthdir_y(_radius, dir_current)));
+//draw thumbstick pad
+draw_sprite_ext(sprite_index,0, x, y,image_xscale,image_yscale,image_angle,image_blend,image_alpha);
 
-
-if(moving)
+//if it is being held down, we need to draw that
+if(is_held())
 {
-	draw_sprite_ext(spr_thumbstick,1,_new_x, _new_y,1,1,dir_current,c_white,1);
+	//we can't draw exactly on the touch location because the player might not be fully centered
+	//and they might have dragged outside of the thumbstick pad
+	var _draw_distance = clamp(point_distance(press_x, press_y, touch_x, touch_y),0,(sprite_width / 2) - 20);
+	var _dir_current = get_direction();
+	var _thumb_x = lengthdir_x(_draw_distance, _dir_current);
+	var _thumb_y = lengthdir_y(_draw_distance, _dir_current);
 	
-	//draw_line(move_origin_x,move_origin_y,touch_x,touch_y);
+	draw_sprite_ext(sprite_index,1, x + _thumb_x, y + _thumb_y,image_xscale,image_yscale,image_angle,image_blend,image_alpha);
 	
+	//for testing
+	//draw_line(press_x,press_y,touch_x,touch_y);
 	//draw_line(x,y,touch_x,touch_y);
 }
 
 
-//ATTACK BUTTON
-
-//CREATE
-/// @description SETUP
-
-event_inherited();
-
-attacking = false;
-
-_camera = view_get_camera(0); // get camera object
-
-touch_id = -1;
-touch_x = x;
-touch_y = y;
-
-function input(_touch_id, _touch_x, _touch_y)
-{
-	attacking = true;
-    touch_id = _touch_id;
-	touch_x = _touch_x;
-	touch_y = _touch_y;
-}
-
-function release()
-{
-	attacking = false;	
-    touch_id = -1;
-    touch_x = x;
-    touch_y = y;
-}
-
-
-//BEGIN STEP
-
-event_inherited();
-
-release();
-
-_camera_x = camera_get_view_x(_camera);
-_camera_y = camera_get_view_y(_camera);
-_camera_width = camera_get_view_width(_camera);
-_camera_height = camera_get_view_height(_camera);
-x = _camera_x + _camera_width - 150;
-y = _camera_y + _camera_height - 150;
