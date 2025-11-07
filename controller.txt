@@ -1,5 +1,8 @@
 //*****************************************************//
+///object - obj_ui_controller
 ///Create Event
+
+/// @description INIT 
 
 //controller array
 controllers = [];
@@ -68,57 +71,74 @@ function value(my_input)
 	return 0;
 }
 
+
+event_perform(ev_keypress, vk_f1);
+
+
 //*****************************************************//
-///Async - System Event
+///Begin Step Event
+/// @desc CONTROLLER SENSE
 
-var _pad_index = async_load[? "pad_index"];
-var _controller_index = array_get_index(controllers, _pad_index);
-
-//controller plugged/unplugged
-switch(async_load[? "event_type"])   
+if(!valid())
 {
-	case "gamepad discovered":  
-	    gamepad_set_axis_deadzone(_pad_index, 0.15);
-		gamepad_set_button_threshold(_pad_index, 0.15);
-	    array_push(controllers, _pad_index);		
+	//loop through all possible controller IDs
+	for(var i = 0; i < 20; i++)
+	{
+		//loop through all buttons
+		for(var j = 0; j < 32; j++)
+		{
+			//if any button is pressed
+			if(	gamepad_button_check(i, j) )
+			{
+				//add controller to array
+				array_push(controllers, i);				
+			    gamepad_set_axis_deadzone(i, 0.15);
+				gamepad_set_button_threshold(i, 0.15);
 				
-		if(_pad_index >= 4)
-		{			
-			//direct input retro controllers
-			//mapping without using gp constants
-			inputs =  {
-				f1: 1,
-				f2: 0,
-				f3: 3,
-				f4: 2,
-				up: 12,
-				down: 13,
-				left: 14,
-				right: 15,
-				shoulder_l: 5,
-				shoulder_r: 7,
-				trigger_l: -1,
-				trigger_r: -1,
-				left_thumb: -1,
-				right_thumb: -1,
-				select: 8,
-				start: 9,	
+				if(i >= 4)
+				{			
+					//direct input retro controllers
+					//mapping without using gp constants
+					inputs =  {
+						f1: 1,
+						f2: 0,
+						f3: 3,
+						f4: 2,
+						up: 12,
+						down: 13,
+						left: 14,
+						right: 15,
+						shoulder_l: 5,
+						shoulder_r: 7,
+						trigger_l: -1,
+						trigger_r: -1,
+						left_thumb: -1,
+						right_thumb: -1,
+						select: 8,
+						start: 9,	
+					}
+				}
 			}
 		}
-	break;
-	
-	case "gamepad lost":  
-	    array_delete(controllers, _controller_index, 1);
-	    array_delete(controllers_mapped, _controller_index, 1);
-	break;
+	}
 }
 
+//*****************************************************//
+///Key press - F1 Event
+/// @desc SNIFFER
+
+if(!instance_exists(obj_ui_controller_sniffer))
+{
+	instance_create_layer(0,0,"HUD",obj_ui_controller_sniffer);
+}
 
 //*****************************************************//
 ///Draw GUI Event - FOR TESTING
+/// @desc TESTING
+
 event_inherited();
 //optional for testing controller buttons
-//*
+/*
 if(valid())
 {
 	draw_set_color(c_black);
@@ -134,13 +154,112 @@ if(valid())
 	//hats
 	for (var i = 0; i < 4; i += 1)
 	{     
-	      //draw_text(500, 30 + (i * 20), string_hash_to_newline("Hat " + string(i) + ", value: " + string(gamepad_hat_value(controllers[0], i)) ));
+	      draw_text(500, 30 + (i * 20), string_hash_to_newline("Hat " + string(i) + ", value: " + string(gamepad_hat_value(controllers[0], i)) ));
 	}
 	//axis
 	for (var i = 0; i < 10; i += 1)
 	{     
-	      //draw_text(700, 30 + (i * 20), string_hash_to_newline("Axis " + string(i) + ", value: " + string(gamepad_axis_value(controllers[0], i)) ));
+	      draw_text(700, 30 + (i * 20), string_hash_to_newline("Axis " + string(i) + ", value: " + string(gamepad_axis_value(controllers[0], i)) ));
 	}
 }
 //*/
+
+
+//*****************************************************//
+///Control Sniffer object - obj_ui_controller_sniffer
+///Create Event
+/// @desc INIT
+
+//the inputs we have already gotten
+input_complete = 0;
+//our inputs
+input_Array =  [0,0,0,0,0,0,0,0,0,0,0,0];
+//messages for gathering inputs
+message_array = [
+	"Press the UP Button",
+	"Press the DOWN Button",
+	"Press the LEFT Button",
+	"Press the RIGHT Button",
+	"Press the TOP FACE Button",
+	"Press the BOTTOM FACE Button",
+	"Press the LEFT FACE Button",
+	"Press the RIGHT FACE Button",
+	"Press the LEFT SHOULDER Button",
+	"Press the RIGHT SHOULDER Button",
+	"Press the SELECT Button",
+	"Press the START Button",
+];
+
+
+//*****************************************************//
+///Step Event
+/// @desc CONTROLLER SENSE
+
+if(input_complete < 12)
+{
+	//loop through all possible controller IDs
+	for(var i = 0; i < 20; i++)
+	{
+		//loop through all buttons
+		for(var j = 0; j < 32; j++)
+		{
+			//if any button is pressed
+			if(	gamepad_button_check_pressed(i, j) )
+			{
+				input_array[input_complete] = j;
+				input_complete++;
+			}
+		}
+	}
+}
+else
+{
+	//we got all the buttons
+	if(instance_exists(obj_ui_controller))
+	{
+		//set all the buttons
+		obj_ui_controller.inputs.up = input_array[0];
+		obj_ui_controller.inputs.down = input_array[1];
+		obj_ui_controller.inputs.left = input_array[2];
+		obj_ui_controller.inputs.right = input_array[3];
+		obj_ui_controller.inputs.f4 = input_array[4];//TOP
+		obj_ui_controller.inputs.f1 = input_array[5];//BOTTOM
+		obj_ui_controller.inputs.f3 = input_array[6];//LEFT
+		obj_ui_controller.inputs.f2 = input_array[7];//RIGHT
+		obj_ui_controller.inputs.shoulder_l = input_array[8];
+		obj_ui_controller.inputs.shoulder_r = input_array[9];
+		obj_ui_controller.inputs.select = input_array[10];
+		obj_ui_controller.inputs.start = input_array[11];	
+	}
+	instance_destroy(self);
+}
+
+
+//*****************************************************//
+///Draw GUI Event
+/// @desc INSTRUCTIONS
+
+if(input_complete < 12)
+{
+	var center_h = global._camera_width / 2;
+	var center_v = global._camera_height / 2;
+
+	draw_set_color(c_black);
+	draw_set_alpha(0.5);
+	draw_rectangle(center_h - 250,center_v - 20,center_h + 250,center_v + 50,false);
+	draw_set_alpha(1);
+	draw_set_color(c_white);
+	
+	draw_set_halign(fa_center);
+	draw_text(center_h, center_v - 10,message_array[input_complete]);
+	draw_text(center_h, center_v + 20, "Or press ESCAPE to skip and use the keyboard");
+}
+
+//*****************************************************//
+//Key Press - Escape Event
+/// @desc SKIP
+
+//skip this and just use the keyboard
+instance_destroy(self);
+
 
