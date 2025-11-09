@@ -16,6 +16,11 @@ function deflect(_object, _max_dis = 1)
 		{
 			throw  ("NO BBOX");
 		}
+		else
+		{
+			_ox = ((_object.bbox_right - _object.bbox_left) / 2) + _object.bbox_left;
+			_oy = ((_object.bbox_bottom - _object.bbox_top) / 2) + _object.bbox_top;
+		}
 	}
 	catch (_error)
 	{
