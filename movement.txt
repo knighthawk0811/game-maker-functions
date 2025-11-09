@@ -244,7 +244,7 @@ function deflect(_object, _max_dis = 1)
 	//get direction to move away
 	var _away = point_direction(_ox,_oy,_x,_y);
 	
-	return move_direction(_away, _max_dis);
+	return move_contact(_away, _max_dis);
 }
 
 
