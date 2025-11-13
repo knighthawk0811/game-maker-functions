@@ -127,10 +127,10 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		
 		//use this to move at about 30/15degrees offest from our main direction
 		//this helps us get around stuff
-		var _side_step = _max_distance / 4;
+		var _side_step = _max_distance / 3;
 		if(_wide)
 		{
-			_side_step = _max_distance / 3;
+			_side_step = _max_distance / 2;
 		}
 		
 		//do horizontal movement
@@ -219,8 +219,12 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 /// @param {Id.Instance}  _object	The Object you want to move away from
 /// @param {real}  _max_dis			The distance you want to move
 /// @description					find the center of self/other and move away by the given distance
-function deflect(_object, _max_dis = 1)
+function deflect(_object, _max_dis = 1, _direct = true)
 {
+	var result = {
+		dir: 0,
+		dis: _max_dis,
+	}
 	//get center of self
 	var _x = ((self.bbox_right - self.bbox_left) / 2) + self.bbox_left;
 	var _y = ((self.bbox_bottom - self.bbox_top) / 2) + self.bbox_top;
@@ -247,9 +251,17 @@ function deflect(_object, _max_dis = 1)
 	}
 
 	//get direction to move away
-	var _away = point_direction(_ox,_oy,_x,_y);
+	result.dir = point_direction(_ox,_oy,_x,_y);
 	
-	return move_contact(_away, _max_dis);
+	if(_direct)
+	{
+		return move_direction(result.dir, result.dis);
+	}
+	else
+	{
+		return move_contact(result.dir, result.dis);
+	}
+	
 }
 
 
@@ -303,26 +315,27 @@ function move_direction(_direction, _distance)
 /// @description					returns one of any directions
 /// @param {real}  _count			The number of possible directions you want to divide 360 into
 function direction_selection(_count = 8){
+	var _output = 0;
 	if(_count <= 360)
 	{
 		switch(_count)
 		{
 			case 0:
-				return 0;
+				_output = 0;
+			break;
 			case 4:
-				return choose(0,90,180,270);
+				_output = choose(0,90,180,270);
 			break;
 			case 8:
-				return choose(0,45,90,135,180,215,270,315);
+				_output = choose(0,45,90,135,180,215,270,315);
 			break;
 			default:
 				// choice * step
-				return floor(irandom_range(0, _count) * (360 / _count));
+				_output = floor(irandom_range(0, _count) * (360 / _count));
 			break;
 		}
 	}
-	//fail safe
-	return 0;
+	return _output;
 }
 
 /// @function						normalize_angle(_angle)
