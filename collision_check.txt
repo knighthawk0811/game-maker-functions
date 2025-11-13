@@ -1,0 +1,62 @@
+
+//hit an object?
+/// @function							collision_check(_obj = noone, _multi = true);
+/// @param {Asset.GMObject}				_obj		The object or parent object you are testing a collision with
+/// @param {Bool}						_multi		Do you want to check for multiple or single
+/// @description						check for collision with object. will return a reference to the closest collision, or noone
+/// @return {Asset.GMObject}			
+function collision_check(_obj = noone, _multi = true)
+{	
+	if(!_multi)
+	{		
+		//single instance checking
+		//check collision with only 1 instance at a time
+		//works ok for fast/small objects
+		var _other = instance_place(x, y, _obj);
+		if ( _other != noone)
+		{
+			//hit _other?
+			with(_other)
+			{	
+				if(self.state == self.states.ACTIVE)
+				{
+					//self is the _other at this point
+					_obj = self;
+				}	
+				else
+				{
+					_obj = noone;	
+				}
+			}
+		}	
+	}
+	else
+	{		
+		//multi instance checking
+		//check collision with multiple instances at the same time
+		//works better slow/big objects
+		var _list = ds_list_create();
+		//get a list of enemies we collided with, nearest first
+		var _num = instance_place_list(x, y, _obj, _list, true);
+		_obj = noone;
+		if (_num > 0)
+		{
+			for (var i = 0; i < _num; ++i)
+			{
+				with(_list[| i])
+				{			
+					if(self.state == self.states.ACTIVE)
+					{
+						//self is the _list[| i] at this point
+						_obj = self;
+						//get out of the loop, we only want the first object
+						break;
+					}	
+				}
+			}
+		}
+		//clear up memory
+		ds_list_destroy(_list);
+	}
+	return _obj;
+}
