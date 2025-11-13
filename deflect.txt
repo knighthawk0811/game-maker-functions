@@ -2,8 +2,12 @@
 /// @param {Id.Instance}  _object	The Object you want to move away from
 /// @param {real}  _max_dis			The distance you want to move
 /// @description					find the center of self/other and move away by the given distance
-function deflect(_object, _max_dis = 1)
+function deflect(_object, _max_dis = 1, _direct = true)
 {
+	var result = {
+		dir: 0,
+		dis: _max_dis,
+	}
 	//get center of self
 	var _x = ((self.bbox_right - self.bbox_left) / 2) + self.bbox_left;
 	var _y = ((self.bbox_bottom - self.bbox_top) / 2) + self.bbox_top;
@@ -30,9 +34,17 @@ function deflect(_object, _max_dis = 1)
 	}
 
 	//get direction to move away
-	var _away = point_direction(_ox,_oy,_x,_y);
+	result.dir = point_direction(_ox,_oy,_x,_y);
 	
-	return move_contact(_away, _max_dis);
+	if(_direct)
+	{
+		return move_direction(result.dir, result.dis);
+	}
+	else
+	{
+		return move_contact(result.dir, result.dis);
+	}
+	
 }
 
 
