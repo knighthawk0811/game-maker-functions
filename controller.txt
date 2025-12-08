@@ -118,6 +118,8 @@ function value(my_input)
 ///Begin Step Event
 /// @desc CONTROLLER SENSE
 
+//if we don't yet have a controller, 
+//test for buttons presses and apply 
 if(!valid())
 {
 	//loop through all possible controller IDs
@@ -137,30 +139,17 @@ if(!valid())
 				if(i >= 4)
 				{			
 					//direct input retro controllers
-					//mapping without using gp constants
-					inputs =  {
-						f1: 1,
-						f2: 0,
-						f3: 3,
-						f4: 2,
-						up: 12,
-						down: 13,
-						left: 14,
-						right: 15,
-						shoulder_l: 5,
-						shoulder_r: 7,
-						trigger_l: -1,
-						trigger_r: -1,
-						left_thumb: -1,
-						right_thumb: -1,
-						select: 8,
-						start: 9,	
-					}
+					input_default_set(false);
 				}
+				//button pressed
+				break;
 			}
+			if(valid()){break;}
 		}
+		if(valid()){break;}
 	}
 }
+
 
 //*****************************************************//
 ///Key press - F1 Event
