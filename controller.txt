@@ -223,19 +223,22 @@ if(valid())
 
 
 //*****************************************************//
+//*****************************************************//
 ///Control Sniffer object - obj_ui_controller_sniffer
 ///Create Event
 /// @desc INIT
 
 //the inputs we have already gotten
 input_complete = 0;
+input_count = 12;
 //our inputs
-input_Array =  [0,0,0,0,0,0,0,0,0,0,0,0];
+input_array =  [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+axis_array = [-1,-1,-1,-1];
 //messages for gathering inputs
 message_array = [
-	"Press the UP Button",
+	"Press the UP Button OR Y Axis",
 	"Press the DOWN Button",
-	"Press the LEFT Button",
+	"Press the LEFT Button OR X Axis",
 	"Press the RIGHT Button",
 	"Press the TOP FACE Button",
 	"Press the BOTTOM FACE Button",
@@ -250,22 +253,48 @@ message_array = [
 
 //*****************************************************//
 ///Step Event
-/// @desc CONTROLLER SENSE
+//// @desc CONTROLLER SENSE
 
-if(input_complete < 12)
+if(input_complete < input_count)
 {
 	//loop through all possible controller IDs
 	for(var i = 0; i < 20; i++)
-	{
+	{		
+		var _button_found = false;
+		
 		//loop through all buttons
 		for(var j = 0; j < 32; j++)
-		{
-			//if any button is pressed
-			if(	gamepad_button_check_pressed(i, j) )
+		{			
+			if(!array_contains(input_array, j))
 			{
-				input_array[input_complete] = j;
-				input_complete++;
+				//if this button was not already pressed
+				//if any button is pressed
+				if(	gamepad_button_check_pressed(i, j) )
+				{
+					input_array[input_complete] = j;
+					input_complete++;
+					_button_found = true;
+					break;
+				}
 			}
+		}
+		
+		if(!_button_found && ( input_complete == 0 || input_complete == 2) )
+		{
+			//loop through all axis
+			for(var j = 0; j < 8; j++)
+			{
+				if(gamepad_axis_value(i, j) != 0 )
+				{
+					if(!array_contains(axis_array, j))
+					{
+						axis_array[input_complete] = j;
+						input_complete += 2;
+						_button_found = true;
+						break;
+					}
+				}	
+			}			
 		}
 	}
 }
@@ -287,9 +316,25 @@ else
 		obj_ui_controller.inputs.shoulder_r = input_array[9];
 		obj_ui_controller.inputs.select = input_array[10];
 		obj_ui_controller.inputs.start = input_array[11];	
+		
+		
+		obj_ui_controller.inputs.axis_ly = axis_array[0];
+		obj_ui_controller.inputs.axis_lx = axis_array[2];
 	}
 	instance_destroy(self);
 }
+
+//destroy if using touch controls
+if(device_mouse_check_button_pressed(0, mb_left))
+{
+	instance_destroy(self);
+}
+//destroy if press escape
+if(keyboard_check(vk_escape))
+{
+	instance_destroy(self);
+}
+
 
 
 //*****************************************************//
@@ -311,12 +356,4 @@ if(input_complete < 12)
 	draw_text(center_h, center_v - 10,message_array[input_complete]);
 	draw_text(center_h, center_v + 20, "Or press ESCAPE to skip and use the keyboard");
 }
-
-//*****************************************************//
-//Key Press - Escape Event
-/// @desc SKIP
-
-//skip this and just use the keyboard
-instance_destroy(self);
-
 
