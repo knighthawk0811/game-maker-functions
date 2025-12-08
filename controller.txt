@@ -161,10 +161,37 @@ if(!instance_exists(obj_ui_controller_sniffer))
 }
 
 //*****************************************************//
+///Async System Event
+/// @desc CONTROLLER SENSE
+
+var _pad_index = async_load[? "pad_index"];
+var _controller_index = array_get_index(controllers, _pad_index);
+
+//controller plugged/unplugged
+switch(async_load[? "event_type"])   
+{
+	case "gamepad discovered":  
+	    array_push(controllers, _pad_index);	
+		gamepad_set_axis_deadzone(_pad_index, 0.15);
+		gamepad_set_button_threshold(_pad_index, 0.15);
+				
+		if(_pad_index >= 4)
+		{			
+			//direct input retro controllers
+			input_default_set(false);
+		}
+	break;
+	
+	case "gamepad lost":  
+	    array_delete(controllers, _controller_index, 1);
+	break;
+}
+
+//*****************************************************//
 ///Draw GUI Event - FOR TESTING
 /// @desc TESTING
 
-event_inherited();
+//event_inherited();
 //optional for testing controller buttons
 /*
 if(valid())
@@ -191,6 +218,8 @@ if(valid())
 	}
 }
 //*/
+
+
 
 
 //*****************************************************//
