@@ -6,27 +6,66 @@
 
 //controller array
 controllers = [];
+inputs = {};
 
 //default button mapping
-//Xinput - XBox controllers
-inputs =  {
-	f1: 12,
-	f2: 13,
-	f3: 14,
-	f4: 15,
-	up: 0,
-	down: 1,
-	left: 2,
-	right: 3,
-	shoulder_l: 8,
-	shoulder_r: 9,
-	trigger_l: 10,
-	trigger_r: 11,
-	left_thumb: 6,
-	right_thumb: 7,
-	select: 8,
-	start: 5,	
+//mapping without using gp constants
+function input_default_set(xinput = true)
+{
+	if(xinput)
+	{		
+		//Xinput - XBox controllers
+		inputs =  {
+			f1: 12,
+			f2: 13,
+			f3: 14,
+			f4: 15,
+			up: 0,
+			down: 1,
+			left: 2,
+			right: 3,
+			shoulder_l: 8,
+			shoulder_r: 9,
+			trigger_l: 10,
+			trigger_r: 11,
+			left_thumb: 6,
+			right_thumb: 7,
+			select: 8,
+			start: 5,
+			axis_lx: 0,
+			axis_ly: 1,
+			axis_rx: 2,
+			axis_ry: 3,
+		}
+	}
+	else
+	{		
+		//direct input retro controllers
+		inputs =  {
+			f1: 1,
+			f2: 0,
+			f3: 3,
+			f4: 2,
+			up: 12,
+			down: 13,
+			left: 14,
+			right: 15,
+			shoulder_l: 5,
+			shoulder_r: 7,
+			trigger_l: -1,
+			trigger_r: -1,
+			left_thumb: -1,
+			right_thumb: -1,
+			select: 8,
+			start: 9,	
+			axis_lx: -1,
+			axis_ly: -1,
+			axis_rx: -1,
+			axis_ry: -1,
+		}
+	}
 }
+input_default_set();
 
 //test if there is a valid controller available
 function valid()
@@ -72,7 +111,7 @@ function value(my_input)
 }
 
 
-event_perform(ev_keypress, vk_f1);
+
 
 
 //*****************************************************//
