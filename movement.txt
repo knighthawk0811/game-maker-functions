@@ -28,22 +28,26 @@ function list_has_solid(_ds_list)
 /// @param {Asset.GMObject, Array, String}	_object			The Object you want to not collide with
 /// @param {Real}					_step			How many internal steps do you want to try if there's a collision? [4] Larger is more acurate, but slower.
 /// @description									like move_contact_solid, but with any object or object type
-function move_contact(_direction, _max_distance, _object = "solid", _step = 4) 
+function move_contact(_direction, _max_distance, _object = "solid", _step = 0) 
 {	
 	//will use later to see if we actually moved
 	var _current_x = x
 	var _current_y = y
 	
-	//how many steps of movement testing will we do?
-	_step = 1 / _step;
-	if(_step <= 0)
-	{
-		_step = 0.1;
-	}
 	
 	//get x,y, components
 	var _movex = lengthdir_x(_max_distance, _direction)
 	var _movey = lengthdir_y(_max_distance, _direction)
+	
+	//how many steps of movement testing will we do?
+	if(_step <= 0)
+	{
+		_step = 1 / max(_movex, _movey);
+	}
+	else
+	{		
+		_step = 1 / _step;
+	}
 	
 	var _moved = false;
 	
