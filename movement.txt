@@ -26,17 +26,28 @@ function list_has_solid(_ds_list)
 /// @param {Real}							_direction			The direction you want to move in
 /// @param {Real}							_max_distance		The distance you want to move
 /// @param {Asset.GMObject, Array, String}	_object				The Object you want to not collide with
+/// @param {Real}							_step				How many pixels per step, default 1
 /// @description												like move_contact_solid, but with any object or object type
-function move_contact(_direction, _max_distance, _object = "solid") 
+function move_contact(_direction, _max_distance, _object = "solid", _step = 1) 
 {	
 	//will use later to see if we actually moved
 	var _current_x = x
 	var _current_y = y
-	
-	
+		
 	//get x,y, components
 	var _movex = lengthdir_x(_max_distance, _direction)
 	var _movey = lengthdir_y(_max_distance, _direction)
+	
+	
+	//prepare the step
+	if(_step < 1)
+	{
+		_step = 1;	
+	}
+	if(_step > max(abs(_movex),abs(_movey)))
+	{
+		_step = max(abs(_movex),abs(_movey))
+	}
 		
 	var _moved = false;
 	
@@ -55,7 +66,7 @@ function move_contact(_direction, _max_distance, _object = "solid")
 	//if collision then 
 	//try to move as far in x and y before hitting the object
 	//use a percentage of the movement values and decrement by 5%
-	for(var i = 1; i < abs(_max_distance); i++)
+	for(var i = 1; i < abs(_max_distance); i += _step)
 	{
 		//move by 1 pixel
 		var _dx = sign(_movex) * floor(max(0, abs(_movex) - i ));
