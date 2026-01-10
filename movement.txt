@@ -69,8 +69,8 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 1)
 	for(var i = 1; i < abs(_max_distance); i += _step)
 	{
 		//move by 1 pixel
-		var _dx = sign(_movex) * floor(max(0, abs(_movex) - i ));
-		var _dy = sign(_movey) * floor(max(0, abs(_movey) - i ));
+		var _dx = sign(_movex) * ceil(max(0, abs(_movex) - i ));
+		var _dy = sign(_movey) * ceil(max(0, abs(_movey) - i ));
 		
 		ds_list_clear(_collision_list);
 		_collision_count = instance_place_list(x + _dx, y + _dy, _object, _collision_list, true);
