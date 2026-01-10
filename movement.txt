@@ -22,13 +22,12 @@ function list_has_solid(_ds_list)
 	}
 	return _solid;	
 }
-/// @function										move_contact(_direction, _max_distance, _object, _step);
-/// @param {Real}					_direction		The direction you want to move in
-/// @param {Real}					_max_distance	The distance you want to move
-/// @param {Asset.GMObject, Array, String}	_object			The Object you want to not collide with
-/// @param {Real}					_step			How many internal steps do you want to try if there's a collision? [4] Larger is more acurate, but slower.
-/// @description									like move_contact_solid, but with any object or object type
-function move_contact(_direction, _max_distance, _object = "solid", _step = 0) 
+/// @function													move_contact(_direction, _max_distance, _object, _step);
+/// @param {Real}							_direction			The direction you want to move in
+/// @param {Real}							_max_distance		The distance you want to move
+/// @param {Asset.GMObject, Array, String}	_object				The Object you want to not collide with
+/// @description												like move_contact_solid, but with any object or object type
+function move_contact(_direction, _max_distance, _object = "solid") 
 {	
 	//will use later to see if we actually moved
 	var _current_x = x
@@ -38,17 +37,7 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 0)
 	//get x,y, components
 	var _movex = lengthdir_x(_max_distance, _direction)
 	var _movey = lengthdir_y(_max_distance, _direction)
-	
-	//how many steps of movement testing will we do?
-	if(_step <= 0)
-	{
-		_step = 1 / max(_movex, _movey);
-	}
-	else
-	{		
-		_step = 1 / _step;
-	}
-	
+		
 	var _moved = false;
 	
 	//collision stuff
@@ -66,11 +55,11 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 0)
 	//if collision then 
 	//try to move as far in x and y before hitting the object
 	//use a percentage of the movement values and decrement by 5%
-	for(var i = 1; i > 0; i -= _step)
+	for(var i = 1; i < abs(_max_distance); i++)
 	{
-		//get a precentage of the movement
-		var _dx = floor(i * _movex);
-		var _dy = floor(i * _movey);
+		//move by 1 pixel
+		var _dx = sign(_movex) * floor(max(0, abs(_movex) - i ));
+		var _dy = sign(_movey) * floor(max(0, abs(_movey) - i ));
 		
 		ds_list_clear(_collision_list);
 		_collision_count = instance_place_list(x + _dx, y + _dy, _object, _collision_list, true);
