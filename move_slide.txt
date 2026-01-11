@@ -92,9 +92,8 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 1)
 /// @param {Real}								_direction		The Object you want to move away from
 /// @param {Real}								_max_distance	The distance you want to move
 /// @param {Asset.GMObject, Array, String}		_object			The Object you want to not collide with
-/// @param {Boolean}							_wide			Take a wide sidestep?
 /// @description												like move_contact_solid, but with any object or object type
-function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
+function move_slide(_direction, _max_distance, _object = "solid")
 {
 	//will use later to see if we actually moved
 	var _current_x = x
@@ -114,23 +113,15 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 	//if we aren't moving then maybe we need to slide on a ramp		
 	if(!_moved)
 	{
-		//collision stuff
-		var _collision_list = ds_list_create();
-		//ds_list_clear(_collision_list);
-		var _collision_count = 0;
+		//temp variables in case we can move in multiple planes they should cancel each other out in the end
+		var _dx_new = 0;
+		var _dy_new = 0;
+		
 		var _solid = false;
 		if(_object == "solid")
 		{
 			_solid = true;
 			_object = all;
-		}
-		
-		//use this to move at about 30/15degrees offest from our main direction
-		//this helps us get around stuff
-		var _side_step = _max_distance / 4;
-		if(_wide)
-		{
-			_side_step = _max_distance / 3;
 		}
 		
 		//do horizontal movement
@@ -140,14 +131,33 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 			if(x == _current_x and y == _current_y)
 			{
 				for(var i = abs(_dx); i > 0; i--) 
-				{				
-					ds_list_clear(_collision_list);
-					_collision_count = instance_place_list(x + (i * sign(_dx)), y - _side_step, _object, _collision_list, true);
-					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{
+					var _slide_x = i * sign(_dx);
+					var _slide_y = _dx * .7;
+					if(_solid)
+					{						
+						//checking for solid objects requires building a list
+						//then checking each object in the list if it is solid
+						var _collision_list = ds_list_create();
+						ds_list_clear(_collision_list);
+						instance_place_list(x + _slide_x, y - _slide_y, _object, _collision_list, true);
+						if( _solid && !list_has_solid(_collision_list) )
+						{
+							_dx_new += _slide_x;
+							_dy_new -= _slide_y;
+							break;
+						}
+					}
+					else
 					{
-						x += i * sign(_dx);
-						y -= _side_step;
-						break;
+						//moving toward an object or array of objects
+						if( !place_meeting(x + _slide_x, y - _slide_y, _object) )
+						{
+							_dx_new += _slide_x;
+							_dy_new -= _slide_y;
+							break;
+						}
+						
 					}
 				}
 			}
@@ -155,14 +165,33 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 			if(x == _current_x and y == _current_y)
 			{
 				for(var i = abs(_dx); i > 0; i--) 
-				{				
-					ds_list_clear(_collision_list);
-					_collision_count = instance_place_list(x + (i * sign(_dx)), y + _side_step, _object, _collision_list, true);
-					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{			
+					var _slide_x = i * sign(_dx);
+					var _slide_y = _dx * .7;
+					if(_solid)
+					{						
+						//checking for solid objects requires building a list
+						//then checking each object in the list if it is solid
+						var _collision_list = ds_list_create();
+						ds_list_clear(_collision_list);
+						instance_place_list(x + _slide_x, y + _slide_y, _object, _collision_list, true);
+						if( _solid && !list_has_solid(_collision_list) )
+						{
+							_dx_new += _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+					}
+					else
 					{
-						x += i * sign(_dx);
-						y += _side_step;
-						break;
+						//moving toward an object or array of objects
+						if( !place_meeting(x + _slide_x, y + _slide_y, _object) )
+						{
+							_dx_new += _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+						
 					}
 				}
 			}
@@ -179,14 +208,33 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 			if(x == _current_x and y == _current_y)
 			{
 				for(var i = abs(_dy); i > 0; i--) 
-				{				
-					ds_list_clear(_collision_list);
-					_collision_count = instance_place_list(x + _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
-					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{		
+					var _slide_x = _dy * .7;
+					var _slide_y = i * sign(_dy) * .7;
+					if(_solid)
+					{						
+						//checking for solid objects requires building a list
+						//then checking each object in the list if it is solid
+						var _collision_list = ds_list_create();
+						ds_list_clear(_collision_list);
+						instance_place_list(x + _slide_x, y + _slide_y, _object, _collision_list, true);
+						if( _solid && !list_has_solid(_collision_list) )
+						{
+							_dx_new += _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+					}
+					else
 					{
-						x += _side_step;
-						y += i * sign(_dy);
-						break;
+						//moving toward an object or array of objects
+						if( !place_meeting(x + _slide_x, y + _slide_y, _object) )
+						{
+							_dx_new += _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+						
 					}
 				}
 			}
@@ -194,14 +242,33 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 			if(x == _current_x and y == _current_y)
 			{
 				for(var i = abs(_dy); i > 0; i--) 
-				{				
-					ds_list_clear(_collision_list);
-					_collision_count = instance_place_list(x - _side_step , y + (i * sign(_dy)), _object, _collision_list, true);
-					if( _collision_count == 0 || (_solid && !list_has_solid(_collision_list)) )
+				{		
+					var _slide_x = _dy * .7;
+					var _slide_y = i * sign(_dy) * .7;
+					if(_solid)
+					{						
+						//checking for solid objects requires building a list
+						//then checking each object in the list if it is solid
+						var _collision_list = ds_list_create();
+						ds_list_clear(_collision_list);
+						instance_place_list(x - _slide_x, y + _slide_y, _object, _collision_list, true);
+						if( _solid && !list_has_solid(_collision_list) )
+						{
+							_dx_new -= _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+					}
+					else
 					{
-						x -= _side_step;
-						y += i * sign(_dy);
-						break;
+						//moving toward an object or array of objects
+						if( !place_meeting(x - _slide_x, y + _slide_y, _object) )
+						{
+							_dx_new -= _slide_x;
+							_dy_new += _slide_y;
+							break;
+						}
+						
 					}
 				}
 			}
@@ -210,5 +277,7 @@ function move_slide(_direction, _max_distance, _object = "solid", _wide = false)
 		{ 
 			//0 == no movement 
 		}	
+		x += _dx_new;
+		y += _dy_new;
 	}
 }
