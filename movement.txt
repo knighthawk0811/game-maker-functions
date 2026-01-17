@@ -22,6 +22,7 @@ function list_has_solid(_ds_list)
 	}
 	return _solid;	
 }
+
 /// @function													move_contact(_direction, _max_distance, _object, _step);
 /// @param {Real}							_direction			The direction you want to move in
 /// @param {Real}							_max_distance		The distance you want to move
@@ -30,10 +31,9 @@ function list_has_solid(_ds_list)
 /// @description												like move_contact_solid, but with any object or object type
 function move_contact(_direction, _max_distance, _object = "solid", _step = 1) 
 {	
-	var _moved = false;
 	//will use later to see if we actually moved
-	var _current_x = x
-	var _current_y = y
+	var _current_x = x;
+	var _current_y = y;
 		
 	//get x,y, components
 	var _movex = lengthdir_x(_max_distance, _direction)
@@ -95,12 +95,7 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 1)
 	}
 	
 	//have we actually moved?
-	if(x != _current_x || y != _current_y)
-	{
-		_moved = true;
-	}
-	
-	return _moved;
+	return(x != _current_x || y != _current_y);
 }
 
 
@@ -112,22 +107,21 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 1)
 function move_slide(_direction, _max_distance, _object = "solid")
 {
 	//will use later to see if we actually moved
-	var _current_x = x
-	var _current_y = y
+	var _current_x = x;
+	var _current_y = y;
 	
 	//use trig to find the x,y portion of movement
 	//dcos, dsin will convert radians and degrees for us
-	var _dx =  _max_distance * dcos(_direction)
-	var _dy = -_max_distance * dsin(_direction)
+	var _dx =  _max_distance * dcos(_direction);
+	var _dy = -_max_distance * dsin(_direction);
 	
 	//can move normally?	
-	var _moved_h = move_contact(0, _dx, _object);
-	var _moved_v = move_contact(270, _dy, _object);
-	var _moved = _moved_h || _moved_v;
+	move_contact(0, _dx, _object);
+	move_contact(270, _dy, _object);
 	
 	//slide?
 	//if we aren't moving then maybe we need to slide on a ramp		
-	if(!_moved)
+	if(x == _current_x && y == _current_y)
 	{
 		//temp variables in case we can move in multiple planes they should cancel each other out in the end
 		var _dx_new = 0;
@@ -144,7 +138,7 @@ function move_slide(_direction, _max_distance, _object = "solid")
 		if(_dx != 0)
 		{
 			//try slide up?	
-			if(x == _current_x and y == _current_y)
+			if(x == _current_x && y == _current_y)
 			{
 				for(var i = abs(_dx); i > 0; i--) 
 				{
@@ -178,7 +172,7 @@ function move_slide(_direction, _max_distance, _object = "solid")
 				}
 			}
 			//try slide down?			
-			if(x == _current_x and y == _current_y)
+			if(x == _current_x && y == _current_y)
 			{
 				for(var i = abs(_dx); i > 0; i--) 
 				{			
@@ -221,7 +215,7 @@ function move_slide(_direction, _max_distance, _object = "solid")
 		if(_dy != 0)
 		{
 			//try slide right?	
-			if(x == _current_x and y == _current_y)
+			if(x == _current_x && y == _current_y)
 			{
 				for(var i = abs(_dy); i > 0; i--) 
 				{		
@@ -255,7 +249,7 @@ function move_slide(_direction, _max_distance, _object = "solid")
 				}
 			}
 			//try slide left?
-			if(x == _current_x and y == _current_y)
+			if(x == _current_x && y == _current_y)
 			{
 				for(var i = abs(_dy); i > 0; i--) 
 				{		
@@ -296,6 +290,9 @@ function move_slide(_direction, _max_distance, _object = "solid")
 		x += _dx_new;
 		y += _dy_new;
 	}
+	
+	//have we actually moved?
+	return(x != _current_x || y != _current_y);
 }
 
 
@@ -303,50 +300,54 @@ function move_slide(_direction, _max_distance, _object = "solid")
 /// @function						deflect(_object, _max_dis);
 /// @param {Id.Instance}  _object	The Object you want to move away from
 /// @param {real}  _max_dis			The distance you want to move
+/// @param {bool}  _direct			move by directly manipulating x,y or use move_contact (true gets out of existing collisions, false keeps form getting into them)
 /// @description					find the center of self/other and move away by the given distance
 function deflect(_object, _max_dis = 1, _direct = true)
 {
-	var result = {
-		dir: 0,
-		dis: _max_dis,
-	}
-	//get center of self
-	var _x = ((self.bbox_right - self.bbox_left) / 2) + self.bbox_left;
-	var _y = ((self.bbox_bottom - self.bbox_top) / 2) + self.bbox_top;
+	if( instance_exists(_object) )
+	{
+		var _direction = 0;
+		//get center of self
+		var _x = ((self.bbox_right - self.bbox_left) / 2) + self.bbox_left;
+		var _y = ((self.bbox_bottom - self.bbox_top) / 2) + self.bbox_top;
 	
-	//get center of other
-	var _ox = _object.x;
-	var _oy = _object.y;
-	try{
-		if(!variable_instance_exists(_object, bbox_left))
+		//get center of other
+		var _ox = _object.x;
+		var _oy = _object.y;
+		try{
+			if(!variable_instance_exists(_object, bbox_left))
+			{
+				throw  ("NO BBOX");
+			}
+			else
+			{
+				_ox = ((_object.bbox_right - _object.bbox_left) / 2) + _object.bbox_left;
+				_oy = ((_object.bbox_bottom - _object.bbox_top) / 2) + _object.bbox_top;
+			}
+		}
+		catch (_error)
 		{
-			throw  ("NO BBOX");
+			var _object_bbox = get_instance_bbox(_object);
+			_ox = ((_object_bbox[1] - _object_bbox[0]) / 2) + _object_bbox[0];
+			_oy = ((_object_bbox[3] - _object_bbox[2]) / 2) + _object_bbox[2];
+		}
+
+		//get direction to move away
+		_direction = point_direction(_ox,_oy,_x,_y);
+	
+		if(_direct)
+		{
+			return move_direction(_direction, _max_dis);
 		}
 		else
 		{
-			_ox = ((_object.bbox_right - _object.bbox_left) / 2) + _object.bbox_left;
-			_oy = ((_object.bbox_bottom - _object.bbox_top) / 2) + _object.bbox_top;
+			return move_contact(_direction, _max_dis);
 		}
-	}
-	catch (_error)
-	{
-		var _object_bbox = get_instance_bbox(_object);
-		_ox = ((_object_bbox[1] - _object_bbox[0]) / 2) + _object_bbox[0];
-		_oy = ((_object_bbox[3] - _object_bbox[2]) / 2) + _object_bbox[2];
-	}
-
-	//get direction to move away
-	result.dir = point_direction(_ox,_oy,_x,_y);
-	
-	if(_direct)
-	{
-		return move_direction(result.dir, result.dis);
 	}
 	else
 	{
-		return move_contact(result.dir, result.dis);
-	}
-	
+		return false;	
+	}	
 }
 
 
@@ -388,12 +389,7 @@ function move_direction(_direction, _distance)
 	y += _dy;
 	
 	//return wether or not we moved
-	if(_dx != 0 || _dy != 0){
-		return true;
-	}
-	else{
-		return false;
-	}
+	return(_dx != 0 || _dy != 0);
 }
 
 /// @function						direction_selection();
