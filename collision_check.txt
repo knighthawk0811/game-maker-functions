@@ -7,6 +7,7 @@
 /// @return {Asset.GMObject}			
 function collision_check(_obj = noone, _multi = true)
 {	
+	var _target = noone;
 	if(!_multi)
 	{		
 		//single instance checking
@@ -18,15 +19,11 @@ function collision_check(_obj = noone, _multi = true)
 			//hit _other?
 			with(_other)
 			{	
-				if(self.state == self.states.ACTIVE)
+				if(self.state != self.states.DEAD)
 				{
 					//self is the _other at this point
-					_obj = self;
+					_target = self;
 				}	
-				else
-				{
-					_obj = noone;	
-				}
 			}
 		}	
 	}
@@ -45,10 +42,10 @@ function collision_check(_obj = noone, _multi = true)
 			{
 				with(_list[| i])
 				{			
-					if(self.state == self.states.ACTIVE)
+					if(self.state != self.states.DEAD)
 					{
 						//self is the _list[| i] at this point
-						_obj = self;
+						_target = self;
 						//get out of the loop, we only want the first object
 						break;
 					}	
@@ -58,5 +55,5 @@ function collision_check(_obj = noone, _multi = true)
 		//clear up memory
 		ds_list_destroy(_list);
 	}
-	return _obj;
+	return _target;
 }
