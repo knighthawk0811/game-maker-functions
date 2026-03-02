@@ -19,7 +19,7 @@ function collision_check(_obj = noone, _multi = true)
 			//hit _other?
 			with(_other)
 			{	
-				if(self.state != self.states.DEAD)
+				if(!variable_instance_exists(id, "state") || self.state != self.states.DEAD)
 				{
 					//self is the _other at this point
 					_target = self;
@@ -42,7 +42,7 @@ function collision_check(_obj = noone, _multi = true)
 			{
 				with(_list[| i])
 				{			
-					if(self.state != self.states.DEAD)
+					if(!variable_instance_exists(id, "state") || self.state != self.states.DEAD)
 					{
 						//self is the _list[| i] at this point
 						_target = self;
