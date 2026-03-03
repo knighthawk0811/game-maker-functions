@@ -1,0 +1,63 @@
+randomize();
+
+#macro GAME_FPS game_get_speed(gamespeed_fps)
+
+function global_init()
+{
+	
+	//main camera
+	global.camera[0] = {
+		ID: view_get_camera(0),
+		width: 0,
+		height: 0,
+		moving: false,
+		viewport_w: 1280,
+		viewport_h: 720,
+	}
+	global.camera[0].width = room_width;
+	global.camera[0].height = room_height;
+				
+	if(view_visible[0])
+	{
+		global.camera[0].width = camera_get_view_width(global.camera[0].ID);
+		global.camera[0].height = camera_get_view_height(global.camera[0].ID);
+	}	
+	
+	global.fullscreen = window_get_fullscreen();
+	fullscreen_toggle(global.fullscreen);
+	
+	//
+	enemy_grid_init();
+	init_keys();
+}
+function fullscreen_toggle(_input = NaN)
+{	
+	//set correctly
+	if(_input == true)
+	{
+		global.fullscreen = true;
+	}
+	else if(_input == false)
+	{
+		global.fullscreen = false;
+	}
+	else
+	{
+		global.fullscreen = !global.fullscreen;
+	}
+	
+	//activate
+	window_set_fullscreen(global.fullscreen);
+	
+	//set window and viewport accordingly
+	call_later(12, time_source_units_frames, fullscreen_normalize);
+}
+
+function fullscreen_normalize()
+{
+	//set viewport size to itself
+	//window_center();
+	view_set_wport(0, global.camera[0].viewport_w);
+	view_set_hport(0, global.camera[0].viewport_h);
+	window_set_size(global.camera[0].viewport_w, global.camera[0].viewport_h);
+}
