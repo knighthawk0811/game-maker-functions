@@ -1,0 +1,189 @@
+
+//inventory management
+#macro INV_MAX 9
+
+// item Data
+enum ITEM_DATA
+{
+	AMOUNT,
+	TYPE,
+	ICON,
+}
+
+// Item types
+enum ITEM_TYPES
+{
+	NONE,
+	POTION,
+	BOOMERANG,
+	SWORD,
+	BOW,
+	KEY,
+	BOMB
+}
+
+
+//inventory functions
+
+/// @function                	inventory_type_to_object(_type);
+/// @param {enum}  _type        	The type of inventory item we are searching for
+/// @description            	return the object name associated with this type
+function inventory_type_to_object(_type){
+	switch (_type){
+    	case ITEM_TYPES.NONE:
+        	//no item
+        	return false;
+    	case ITEM_TYPES.BOMB:
+        	//
+    	case ITEM_TYPES.BOOMERANG:
+        	//
+    	case ITEM_TYPES.BOW:
+        	//
+    	case ITEM_TYPES.KEY:
+        	//
+        	return obj_item_key;
+    	case ITEM_TYPES.POTION:
+        	//
+        	return obj_item_health;
+    	case ITEM_TYPES.SWORD:
+        	//
+        	return obj_item_sword;
+    	default:
+        	//
+        	return false;   	 
+	}    
+}
+
+
+
+/// @function                    	inventory_search(_inv_obj, _type);
+/// @param {asset}  _inv_obj    	The Object containing the inventory array
+/// @param {real}  _type        	The type of inventory  item we are searching for
+/// @description                	find an inventory item by its type
+function inventory_search(_inv_obj, _type){
+	for( var _i = 0; _i < INV_MAX; _i++){
+    	if(_inv_obj.inventory[_i][ITEM_DATA.TYPE] == _type){
+        	return(_i);    
+    	}
+	}
+	return(-1);
+}
+
+/// @function                    	inventory_add(_inv_obj, _item);
+/// @param {asset}  _inv_obj    	The Object containing this inventory array
+/// @param {array}  _item        	The inventory  item we are searching for
+/// @param {real}  _location    	possible array index of the item
+/// @description                	add an item to the inventory in the first empty location OR update the amount if it's already in the inventory
+function inventory_add(_inv_obj, _item, _location = -1){
+	var _location_temp = _location;
+    
+	//find location that's already got this item type
+	_location_temp = inventory_search(_inv_obj, _item[ITEM_DATA.TYPE]);
+    
+	//check if the previously selected location is empty
+	if( _location_temp == -1 && _location >= 0 && _location < INV_MAX ){
+    	if(_inv_obj.inventory[_location][ITEM_DATA.TYPE] == ITEM_TYPES.NONE){
+        	_location_temp = _location;
+    	}
+	}
+	//if no other spot, find the first empty location
+	if(_location_temp == -1){
+    	_location_temp = inventory_search(_inv_obj, ITEM_TYPES.NONE);
+	}
+	//add into whichever location we found
+	return inventory_add_location(_inv_obj, _item, _location_temp);
+}
+
+/// @function                    	inventory_add_location(_inv_obj, _item, _location);
+/// @param {asset}  _inv_obj    	The Object containing this inventory array
+/// @param {array}  _item        	The inventory  item we are searching for
+/// @param {real}  _location        	array index of the item
+/// @description                	add item in a specific _location
+function inventory_add_location(_inv_obj, _item, _location){
+	if( _location >= 0 && _location < INV_MAX ){
+    	if( _inv_obj.inventory[_location][ITEM_DATA.TYPE] == ITEM_TYPES.NONE ){
+        	_inv_obj.inventory[_location] = _item;
+        	return true;
+    	}
+    	else if( _inv_obj.inventory[_location][ITEM_DATA.TYPE] == _item[ITEM_DATA.TYPE] ){
+        	_inv_obj.inventory[_location][ITEM_DATA.AMOUNT] += _item[ITEM_DATA.AMOUNT];
+        	return true;
+    	}
+	}
+	return false;
+}
+
+/// @function                    	inventory_remove(_inv_obj, _item);
+/// @param {asset}  _inv_obj    	The Object containing this inventory array
+/// @param {array}  _item        	The inventory  item we are searching for
+/// @description                	remove item by type
+function inventory_remove(_inv_obj, _item){
+	var _location = inventory_search(_inv_obj, _item[ITEM_DATA.TYPE]);
+	return  inventory_remove_location(_inv_obj, _location);
+}
+
+/// @function                    	inventory_remove_location(_inv_obj, _location);
+/// @param {asset}  _inv_obj    	The Object containing this inventory array
+/// @param {real}  _location        	array index of the item
+/// @description                	remove a single item from a spot
+function inventory_remove_location(_inv_obj, _location){
+    
+	if( _location >= 0 && _location < INV_MAX ){
+    	if(_inv_obj.inventory[_location][ITEM_DATA.AMOUNT] > 1)
+    	{
+        	var _item = [];
+        	_item[ITEM_DATA.AMOUNT] = 1;
+        	_item[ITEM_DATA.TYPE] = _inv_obj.inventory[_location][ITEM_DATA.TYPE];
+        	_item[ITEM_DATA.ICON] = _inv_obj.inventory[_location][ITEM_DATA.ICON];
+        	_inv_obj.inventory[_location][ITEM_DATA.AMOUNT] -= 1;       	 
+        	return _item;   	 
+    	}
+    	else {
+        	return inventory_clear_location(_inv_obj, _location)
+    	}
+	}
+	return false;
+}
+
+/// @function                    	inventory_clear_location(_inv_obj, _location);
+/// @param {asset}  _inv_obj    	The Object containing this inventory array
+/// @param {real}  _location        	array index of the item
+/// @description                	remove ANY item from a specific spot
+function inventory_clear_location(_inv_obj, _location){
+	if( _location >= 0 && _location < INV_MAX ){
+    	var _item = [];
+    	_item[ITEM_DATA.AMOUNT] = _inv_obj.inventory[_location][ITEM_DATA.AMOUNT];
+    	_item[ITEM_DATA.TYPE] = _inv_obj.inventory[_location][ITEM_DATA.TYPE];
+    	_item[ITEM_DATA.ICON] = _inv_obj.inventory[_location][ITEM_DATA.ICON];
+    	_inv_obj.inventory[_location][ITEM_DATA.AMOUNT] = 0;
+    	_inv_obj.inventory[_location][ITEM_DATA.TYPE] = ITEM_TYPES.NONE;
+    	_inv_obj.inventory[_location][ITEM_DATA.ICON] = false;
+    	return _item;
+	}
+	return false;
+}
+
+
+
+
+
+/// @function                	inventory_place_item(_type, _amount, _x, _y);
+/// @param {real}  _type        	The type of inventory  item we are placing
+/// @param {real}  _amount    	How many items
+/// @description            	place an item on the ground at a location
+function inventory_place_item(_type, _amount, _x, _y){
+	if(_type != ITEM_TYPES.NONE){
+    	var _obj = inventory_type_to_object(_type)
+    	var _item_temp = instance_create_layer(_x, _y,"Instances",_obj);
+    	with(_item_temp){
+        	item[ITEM_DATA.AMOUNT] = _amount;    
+    	}
+	}
+}
+
+
+
+
+
+
+
