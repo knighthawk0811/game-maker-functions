@@ -22,12 +22,12 @@ function list_has_solid(_ds_list)
 	}
 	return _solid;	
 }
-/// @function													move_contact(_direction, _max_distance, _object, _step);
-/// @param {Real}							_direction			The direction you want to move in
-/// @param {Real}							_max_distance		The distance you want to move
-/// @param {Asset.GMObject, Array, String}	_object				The Object you want to not collide with
-/// @param {Real}							_step				How many pixels per step, default 1
-/// @description												like move_contact_solid, but with any object or object type
+/// @function													                                move_contact(_direction, _max_distance, _object, _step);
+/// @param {Real}							                                 _direction			The direction you want to move in
+/// @param {Real}							                                 _max_distance		The distance you want to move
+/// @param {Id.TileMapElement, Asset.GMObject, Constant.All, Array, String}	 _object			The Object you want to not collide with
+/// @param {Real}							                                 _step				How many pixels per step, default 1
+/// @description											                                   	like move_contact_solid, but with any object or object type
 function move_contact(_direction, _max_distance, _object = "solid", _step = 1) 
 {	
 	var _moved = false;
@@ -104,11 +104,11 @@ function move_contact(_direction, _max_distance, _object = "solid", _step = 1)
 }
 
 
-/// @function													move_slide(_direction, _max_distance, _object, _wide);
-/// @param {Real}								_direction		The Object you want to move away from
-/// @param {Real}								_max_distance	The distance you want to move
-/// @param {Asset.GMObject, Array, String}		_object			The Object you want to not collide with
-/// @description												like move_contact_solid, but with any object or object type
+/// @function						                 							move_slide(_direction, _max_distance, _object, _wide);
+/// @param {Real}					                                			_direction		The Object you want to move away from
+/// @param {Real}							                                	_max_distance	The distance you want to move
+/// @param {Id.TileMapElement, Asset.GMObject, Constant.All, Array, String}		_object			The Object you want to not collide with
+/// @description									                			like move_contact_solid, but with sliding and any object or object type
 function move_slide(_direction, _max_distance, _object = "solid")
 {
 	//will use later to see if we actually moved
