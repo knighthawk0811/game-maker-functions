@@ -303,9 +303,10 @@ function move_slide(_direction, _max_distance, _object = "solid")
 /// @function						deflect(_object, _max_dis, _direct);
 /// @param {Id.Instance}  _object	The Object you want to move away from
 /// @param {real}  _max_dis			The distance you want to move
-/// @param {bool}  _direct			Directly manipulate x,y (1), or use move_contact (2), or use move_slide (3)
+/// @param {bool}  _direct			(1, default) Directly manipulate x,y | (2) use move_contact | (3) use move_slide
+/// @param {Id.TileMapElement, Asset.GMObject, Constant.All, Array, String}		_object			The Object you want to not collide with
 /// @description					find the center of self/other and move away by the given distance
-function deflect(_object, _max_dis = 1, _move_option = 1)
+function deflect(_object, _max_dis = 1, _move_option = 1, _collide = "solid")
 {
 	var result = {
 		dir: 0,
@@ -346,11 +347,11 @@ function deflect(_object, _max_dis = 1, _move_option = 1)
 	}
 	else if(_move_option == 3)
 	{
-		result.moved = move_slide(result.dir, _max_dis);
+		result.moved = move_slide(result.dir, _max_dis, _collide);
 	}
 	else
 	{
-		result.moved = move_contact(result.dir, _max_dis);
+		result.moved = move_contact(result.dir, _max_dis, _collide);
 	}
 	return result;
 }
