@@ -416,9 +416,15 @@ function direction_selection(_count = 8){
 				_output = 0;
 			break;
 			case 4:
+				//up,down,left,right
 				_output = choose(0,90,180,270);
 			break;
+			case 6:
+				//diagonal only
+				_output = choose(45,135,215,315);
+			break;
 			case 8:
+				//all 8
 				_output = choose(0,45,90,135,180,215,270,315);
 			break;
 			default:
